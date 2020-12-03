@@ -1,4 +1,4 @@
-# wistar-supply
+# ims-print-management
 
 ## Project setup
 
