@@ -1,0 +1,120 @@
+@import './colors';
+
+@html-font-size: 16px;
+@font-family-base: 'Montserrat', sans-serif;
+
+@font-weight-light: 300;
+@font-weight-normal: 500;
+@font-weight-semi-bold: 600;
+@font-weight-bold: 700;
+
+@font-size-lg: 1.25rem;
+@font-size-sm: 0.875rem;
+
+@h1-font-size: 1.75rem; // 28px
+@h2-font-size: 1.5rem; // 24px
+@h3-font-size: 1.375rem; // 22px
+@h4-font-size: 1.125rem; // 20px
+@h5-font-size: 1rem; // 16px
+@h6-font-size: 0.875rem; // 14px
+
+// Label Variable
+@label-spacing: 0.2rem 0.5rem 0.1rem;
+@label-font-color: @light;
+@label-font-size: 75%;
+@label-font-weight: 500;
+@label-transform: uppercase;
+@label-border-radius: 0.25rem;
+
+// Sidebar Variable
+@sidebar-bg: #2e3344;
+@sidebar-width: 250px;
+@sidebar-nav-color: @light;
+@sidebar-nav-text-size: 14px;
+@sidebar-nav-active-color: @light;
+@sidebar-nav-active-bg: @primary;
+@sidebar-nav-spacing: 10px;
+@sidebar-nav-font-weight: 500;
+@sidebar-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+@sidebar-subnav-font-size: @sidebar-nav-text-size;
+@sidebar-subnav-font-color: @sidebar-nav-color;
+@sidebar-icon-color: @primary;
+
+// Breadcrumb Variable
+@breadcrumb-font-weight: 500;
+@breadcrumb-font-color: @gray-dark;
+@breadcrumb-font-size: 1.5rem; //24px;
+
+// App Custom Card
+@card-bg: #fff;
+@card-border-radius: 0px;
+@card-border: 1px solid #ebecef;
+@card-spacing: 1.25rem 1.25rem; //20px 20px
+@card-margin-bottom: 0rem; //0px
+@card-shadow: 0 1px 15px 1px rgba(69, 65, 78, 0.08);
+@card-hover-shadow: none;
+
+// Card Title
+@card-title-color: @gray-dark;
+@card-title-font-size: 1rem; //22px;
+@card-title-transform: capitalize;
+@card-title-weight: 600;
+@card-title-spacing: 1rem 1.25rem; //16px 20px
+@card-title-border: none;
+@card-footer-spacing: 1rem 1.25rem; //16px 20px
+
+// Card Contextual link
+@contextual-link-size: 1.25rem; //20px
+@contextual-link-color: @gray-light;
+
+// Dashboard Tooltip Title
+@d-title-color: @gray-dark;
+@d-title-font-size: 0.8125rem; //13px;
+@d-title-transform: uppercase;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+// 文本多出部分隐藏，并显示...
+.textHide() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 水平居中
+.center() {
+  margin: 0 auto;
+  text-align: center;
+}
+
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // text-align: center;
+  color: #2c3e50;
+}
+ // 列表操作按钮
+.ims-btn{
+  color:@primary;
+  font-size: 12px;
+  margin-right: 10px;
+  cursor: pointer;
+  &:last-child {
+    margin-right: 0px;
+  }
+}
+  // 按钮禁用样式
+  .ims-btn-disabled {
+    color: fade(@dark, 35%);
+    margin-right: 10px;
+    cursor: not-allowed;
+    &:last-child {
+      margin-right: 0px;
+    }
+  }
+
+@import './custom/custom';
