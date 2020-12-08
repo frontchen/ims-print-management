@@ -1,45 +1,45 @@
 @modal-input-height: 28px;
 // 主体菜单颜色
-@mw-main-menu-color: #969696;
+@ims-main-menu-color: #969696;
 // 黑色
-@mw-black-color: #000000;
+@ims-black-color: #000000;
 // 白色
-@mw-white-color: #ffffff;
+@ims-white-color: #ffffff;
 // 点击边框颜色
-@mw-hover-bdcolor: #bebebe;
+@ims-hover-bdcolor: #bebebe;
 // 主题色
-@mw-main-color: #00bdab;
+@ims-main-color: #409EFF;
 // form
-@mw-form-label: #282828;
-@mw-form-error: #ed4014;
+@ims-form-label: #282828;
+@ims-form-error: #ed4014;
 // modal
 @modal-confirm-title: #444444;
 @modal-confirm-body: #828282;
-@mw-modal-list-color: #fafafa;
-@mw-modal-list-border: #e6e6e6;
-@mw-modal-border-color: #ababab;
+@ims-modal-list-color: #fafafa;
+@ims-modal-list-border: #e6e6e6;
+@ims-modal-border-color: #ababab;
 // 灰色
-@mw-bread-color: #626262;
-@mw-gray-color: #333333;
-@mw-gray2-color: #cccccc;
+@ims-bread-color: #626262;
+@ims-gray-color: #333333;
+@ims-gray2-color: #cccccc;
 // 橙色
-@mw-header-icon: #e47d3a;
+@ims-header-icon: #e47d3a;
 // 按钮默认颜色
 @btn-default-border: #e5e5e5;
-@mw-button-cancel: #f2f2f2;
-@mw-button-cancel-border: #dcdcdc;
+@ims-button-cancel: #f2f2f2;
+@ims-button-cancel-border: #dcdcdc;
 // table
-@mw-table-color: #6b6b6b;
-@mw-table-bjColor: #f3f3f3;
-.hover(@color: @mw-hover-bdcolor) {
+@ims-table-color: #6b6b6b;
+@ims-table-bjColor: #f3f3f3;
+.hover(@color: @ims-hover-bdcolor) {
   border-color: @color;
 }
-.active(@color: @mw-hover-bdcolor) {
+.active(@color: @ims-hover-bdcolor) {
   border-color: @color;
   outline: 0;
   box-shadow: none;
 }
-/deep/ .pos-com-modal {
+/deep/ .ims-modal {
   display: flex;
   flex-direction: column;
   margin: 0 auto !important;
@@ -68,25 +68,25 @@
     right: 5px;
     bottom: 0;
     height: 24px;
-    color: @mw-hover-bdcolor;
+    color: @ims-hover-bdcolor;
   }
 
   // text
   .text {
     .text-placeholder {
-      color: @mw-main-menu-color;
+      color: @ims-main-menu-color;
     }
   }
 
-  .mw-text {
+  .ims-text {
     cursor: default;
-    color: @mw-main-color;
+    color: @ims-main-color;
   }
 
   // button
-  .mw-btn {
+  .ims-btn {
     cursor: pointer;
-    color: @mw-main-color;
+    color: @ims-main-color;
     margin-right: 10px;
 
     &:last-child {
@@ -94,8 +94,8 @@
     }
   }
 
-  .mw-btn-disabled {
-    color: fade(@mw-black-color, 35%);
+  .ims-btn-disabled {
+    color: fade(@ims-black-color, 35%);
     margin-right: 10px;
     cursor: not-allowed;
 
@@ -113,8 +113,8 @@
       text-align: center;
       height: 30px;
       line-height: 30px;
-      color: @mw-form-label;
-      border-top: 1px solid @mw-modal-list-border;
+      color: @ims-form-label;
+      border-top: 1px solid @ims-modal-list-border;
     }
 
     &-body {
@@ -125,10 +125,10 @@
       overflow-x: hidden;
       overflow-y: auto;
       padding: 5px 0px;
-      border: 1px solid @mw-modal-list-border;
-      background-color: @mw-modal-list-color;
+      border: 1px solid @ims-modal-list-border;
+      background-color: @ims-modal-list-color;
 
-      .ivu-col {
+      .el-col {
         line-height: 22px;
       }
 
@@ -149,7 +149,7 @@
           top: 0;
           right: -15px;
           font-size: 12px;
-          color: @mw-header-icon;
+          color: @ims-header-icon;
         }
       }
     }
@@ -157,8 +157,8 @@
 
   // 覆盖默认样式
   // 表单宽度
-  .ivu-select,
-  .ivu-input-wrapper {
+  .el-select,
+  .el-input-wrapper {
     width: 140px;
   }
 
@@ -175,7 +175,7 @@
     &-inner {
       font-size: 13px;
       font-weight: normal;
-      color: @mw-bread-color;
+      color: @ims-bread-color;
     }
   }
 
@@ -203,14 +203,14 @@
       }
 
       &--primary {
-        background: @mw-main-color;
-        border-color: @mw-main-color;
+        background: @ims-main-color;
+        border-color: @ims-main-color;
       }
 
       &--text {
-        background: @mw-button-cancel;
-        border: 1px solid @mw-button-cancel-border;
-        color: @mw-gray-color;
+        background: @ims-button-cancel;
+        border: 1px solid @ims-button-cancel-border;
+        color: @ims-gray-color;
       }
     }
 
@@ -219,7 +219,7 @@
     }
   }
 
-  .ivu-form {
+  .el-form {
     position: relative;
 
     &-item {
@@ -227,7 +227,7 @@
     }
 
     &-item-label {
-      color: @mw-form-label;
+      color: @ims-form-label;
       padding: 0px 12px 0px 0px;
       line-height: 28px;
     }
@@ -235,13 +235,13 @@
     &-item-content {
       line-height: @modal-input-height;
 
-      .ivu-input {
+      .el-input {
         height: @modal-input-height;
-        color: @mw-table-color;
+        color: @ims-table-color;
       }
     }
 
-    .mw-modal-add {
+    .ims-modal-add {
       position: absolute;
       bottom: 20px;
       left: 100%;
@@ -253,40 +253,40 @@
   }
 
   // select
-  .ivu-select {
+  .el-select {
     &-selection {
-      border-color: @mw-modal-border-color;
+      border-color: @ims-modal-border-color;
 
       &:hover,
       &-focused {
         .hover();
-        border-color: @mw-modal-border-color;
+        border-color: @ims-modal-border-color;
       }
     }
 
     &-visible {
-      .ivu-select-selection {
+      .el-select-selection {
         .active();
-        border-color: @mw-modal-border-color;
+        border-color: @ims-modal-border-color;
       }
     }
 
-    &-single .ivu-select-selection {
+    &-single .el-select-selection {
       height: @modal-input-height;
 
-      .ivu-select-placeholder,
-      .ivu-select-selected-value {
+      .el-select-placeholder,
+      .el-select-selected-value {
         height: @modal-input-height;
         line-height: @modal-input-height;
         text-align: center;
       }
 
-      .ivu-select-placeholder {
-        color: @mw-gray2-color;
+      .el-select-placeholder {
+        color: @ims-gray2-color;
       }
 
-      .ivu-select-selected-value {
-        color: @mw-table-color;
+      .el-select-selected-value {
+        color: @ims-table-color;
       }
     }
 
@@ -302,8 +302,8 @@
     }
   }
 
-  .ivu-select-multiple {
-    .ivu-select-selection {
+  .el-select-multiple {
+    .el-select-selection {
       & > div {
         font-size: 12px;
         height: 26px;
@@ -311,7 +311,7 @@
         text-align: center;
       }
 
-      .ivu-select-placeholder {
+      .el-select-placeholder {
         height: 26px;
         line-height: 26px;
         padding: 0px;
@@ -321,7 +321,7 @@
   }
 
   // cascader
-  .ivu-cascader {
+  .el-cascader {
     &-label {
       text-align: center;
       line-height: 28px;
@@ -329,21 +329,21 @@
     }
   }
 
-  .ivu-cascader-disabled {
-    .ivu-cascader-label {
-      color: @mw-gray2-color;
+  .el-cascader-disabled {
+    .el-cascader-label {
+      color: @ims-gray2-color;
     }
 
-    .ivu-cascader-arrow {
-      color: @mw-gray2-color;
+    .el-cascader-arrow {
+      color: @ims-gray2-color;
     }
   }
 
   // input
-  .ivu-input {
+  .el-input {
     height: @modal-input-height;
     text-align: center;
-    border-color: @mw-modal-border-color;
+    border-color: @ims-modal-border-color;
 
     &-icon {
       height: @modal-input-height;
@@ -352,21 +352,21 @@
 
     &:hover {
       .hover();
-      border-color: @mw-modal-border-color;
+      border-color: @ims-modal-border-color;
     }
 
     &:focus {
       .active();
-      border-color: @mw-modal-border-color;
+      border-color: @ims-modal-border-color;
     }
 
     &-group-append {
-      color: @mw-table-color;
-      border-color: @mw-modal-border-color;
+      color: @ims-table-color;
+      border-color: @ims-modal-border-color;
       border-left: none;
       background-color: transparent;
 
-      .ivu-select {
+      .el-select {
         &-selection {
           &:hover,
           &-focused {
@@ -378,7 +378,7 @@
         }
 
         &-visible {
-          .ivu-select-selection {
+          .el-select-selection {
             border-color: transparent;
           }
         }
@@ -386,100 +386,100 @@
     }
   }
 
-  .ivu-input-group-with-append {
-    .ivu-input {
+  .el-input-group-with-append {
+    .el-input {
       border-right: none;
     }
   }
 
-  .ivu-input-prefix,
-  .ivu-input-suffix {
+  .el-input-prefix,
+  .el-input-suffix {
     line-height: 28px;
     width: unset;
-    color: @mw-table-color;
+    color: @ims-table-color;
   }
 
-  .ivu-input-prefix {
+  .el-input-prefix {
     padding-left: 8px;
   }
 
-  .ivu-input-suffix {
+  .el-input-suffix {
     padding-right: 8px;
   }
 
-  textarea.ivu-input {
+  textarea.el-input {
     text-align: left;
     font-size: 12px;
   }
 
   // date-picker
-  .ivu-date-picker {
+  .el-date-picker {
     &-focused input {
       .active();
     }
   }
 
   // region
-  .mw-com-region {
-    .ivu-select {
+  .ims-com-region {
+    .el-select {
       width: 100%;
     }
   }
 
   // error
-  .ivu-form-item-error {
-    .ivu-input {
-      border: 1px solid @mw-form-error;
+  .el-form-item-error {
+    .el-input {
+      border: 1px solid @ims-form-error;
     }
 
-    .ivu-input-group-with-append {
-      .ivu-input {
+    .el-input-group-with-append {
+      .el-input {
         border-right: none;
 
         &-group-append {
-          border: 1px solid @mw-form-error;
+          border: 1px solid @ims-form-error;
           border-left: none;
         }
       }
     }
 
-    .ivu-select-selection {
-      border: 1px solid @mw-form-error;
+    .el-select-selection {
+      border: 1px solid @ims-form-error;
     }
   }
 
   // 禁用样式
   .modal-item-disabled {
     label {
-      color: @mw-button-cancel-border;
+      color: @ims-button-cancel-border;
     }
 
-    .ivu-select {
-      .ivu-select-selection {
-        background-color: @mw-white-color;
-        border-color: @mw-button-cancel-border;
+    .el-select {
+      .el-select-selection {
+        background-color: @ims-white-color;
+        border-color: @ims-button-cancel-border;
       }
 
-      .ivu-select-selected-value {
-        color: @mw-button-cancel-border;
+      .el-select-selected-value {
+        color: @ims-button-cancel-border;
       }
     }
 
-    .ivu-input-wrapper {
-      .ivu-input {
-        color: @mw-button-cancel-border;
-        background-color: @mw-white-color;
-        border-color: @mw-button-cancel-border;
+    .el-input-wrapper {
+      .el-input {
+        color: @ims-button-cancel-border;
+        background-color: @ims-white-color;
+        border-color: @ims-button-cancel-border;
       }
 
-      .ivu-input-group-append {
-        color: @mw-button-cancel-border;
-        border-color: @mw-button-cancel-border;
+      .el-input-group-append {
+        color: @ims-button-cancel-border;
+        border-color: @ims-button-cancel-border;
       }
 
-      .ivu-input-prefix,
-      .ivu-input-suffix {
-        color: @mw-button-cancel-border;
+      .el-input-prefix,
+      .el-input-suffix {
+        color: @ims-button-cancel-border;
       }
     }
   }

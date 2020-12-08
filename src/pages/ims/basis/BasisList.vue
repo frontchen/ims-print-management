@@ -71,6 +71,24 @@
 						</div>
 					</div>
 				</app-card>
+				<!-- 新增 -->
+				<app-modal
+					v-loading="modal1.isRequest"
+					:loading="modal1.loading"
+					:title="modal1.title"
+					:labelWidth="modal1.labelWidth"
+					:label-position="modal1.labelPosition"
+					:width="modal1.width"
+					:inline="modal1.inline"
+					v-model="modal1.isOpen"
+					:col="modal1.col"
+					:data="modal1.data"
+					:values="modal1.values"
+					@on-ok="addSure"
+					@on-change="selectChange"
+					:ruleValidate="modal1.ruleValidate"
+					ref="modal1"
+				></app-modal>
 			</v-layout>
 		</v-container>
 	</div>
@@ -119,6 +137,18 @@ export default {
 						placeholder: '请选择',
 						type: 'daterange',
 						size: 'mini',
+					},
+				},
+				{
+					type: 'button',
+					label: '新增',
+					name: 'add',
+					disabled: true,
+					attr: {
+						disabled: false,
+						type: 'add',
+						buttonType: 'primary',
+						icon: 'el-icon-edit',
 					},
 				},
 				{
@@ -294,6 +324,149 @@ export default {
 			pageIndex: 1,
 			pageSize: 10,
 			total: 1,
+			// 新增
+			modal1: {
+				title: '新增',
+				loading: false,
+				isRequest: false,
+				isOpen: false,
+				inline: true,
+				width: '600px',
+				col: 2,
+				labelWidth: '100px',
+				labelPosition: 'right',
+				values: {},
+				ruleValidate: {
+					depart: [
+						{
+							required: true,
+							type: 'string',
+							message: '部门名称不能为空',
+							trigger: 'change',
+						},
+					],
+					name: [
+						{
+							required: true,
+							type: 'string',
+							message: '名称不能为空',
+							trigger: 'blur',
+						},
+					],
+					unitName: [
+						{
+							required: true,
+							type: 'string',
+							message: '单位不能为空',
+							trigger: 'blur',
+						},
+					],
+					price: [
+						{
+							required: true,
+							type: 'string',
+							message: '单价不能为空',
+							trigger: 'blur',
+						},
+					],
+					product: [
+						{
+							required: true,
+							type: 'string',
+							message: '不能为空',
+							trigger: 'blur',
+						},
+					],
+					sale: [
+						{
+							required: true,
+							type: 'string',
+							message: '不能为空',
+							trigger: 'blur',
+						},
+					],
+					purchase: [
+						{
+							required: true,
+							type: 'string',
+							message: '不能为空',
+							trigger: 'blur',
+						},
+					],
+				},
+				sendData: {}, // 修改联系信息暂存数据
+				data: [
+					{
+						type: 'input',
+						label: '名称',
+						name: 'name',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入名称',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '单位',
+						name: 'unitName',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入单位',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '单价',
+						name: 'price',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入单价',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '生产',
+						name: 'product',
+						value: '',
+						attr: {
+							clearable: true,
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '销售',
+						name: 'sale',
+						value: '',
+						attr: {
+							clearable: true,
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '采购',
+						name: 'purchase',
+						value: '',
+						attr: {
+							clearable: true,
+							filterable: true,
+							disabled: false,
+						},
+					},
+				],
+			},
 		}
 	},
 	mounted() {
@@ -303,7 +476,11 @@ export default {
 		//搜索栏查询
 		getSearch() {},
 		// 搜索栏按钮点击
-		showModal() {},
+		showModal(type) {
+			if (type === 'add') {
+				this.modal1.isOpen = true
+			}
+		},
 		// 搜索栏select cascader切换事件
 		changeSearchList() {},
 		getTablesData(page = 1) {
@@ -350,6 +527,8 @@ export default {
 				},
 			})
 		},
+		selectChange() {},
+		addSure() {},
 		//列表显示下单时间
 		renderDate(h, params) {
 			let row = params.row

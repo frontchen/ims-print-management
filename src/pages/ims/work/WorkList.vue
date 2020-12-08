@@ -102,6 +102,18 @@ export default {
 				},
 				{
 					type: 'button',
+					label: '新增',
+					name: 'add',
+					disabled: true,
+					attr: {
+						disabled: false,
+						type: 'add',
+						buttonType: 'primary',
+						icon: 'el-icon-edit',
+					},
+				},
+				{
+					type: 'button',
 					label: '审批',
 					name: 'approval',
 					disabled: true,
@@ -228,7 +240,16 @@ export default {
 		//搜索栏查询
 		getSearch() {},
 		// 搜索栏按钮点击
-		showModal() {},
+		showModal(type) {
+			if (type === 'add') {
+				this.$router.push({
+					name: 'work-add',
+					params: {
+						type: 'add',
+					},
+				})
+			}
+		},
 		// 搜索栏select cascader切换事件
 		changeSearchList() {},
 		getTablesData(page = 1) {
@@ -267,14 +288,7 @@ export default {
 		handleCurrentChange(val) {
 			this.getTablesData(val)
 		},
-		addOrder() {
-			this.$router.push({
-				name: 'work-add',
-				params: {
-					type: 'add',
-				},
-			})
-		},
+
 		//列表显示下单时间
 		renderDate(h, params) {
 			let row = params.row
