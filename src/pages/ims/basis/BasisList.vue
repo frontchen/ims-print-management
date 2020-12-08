@@ -342,7 +342,7 @@ export default {
 							required: true,
 							type: 'string',
 							message: '部门名称不能为空',
-							trigger: 'change',
+							trigger: 'blur',
 						},
 					],
 					name: [
@@ -404,6 +404,18 @@ export default {
 						attr: {
 							clearable: true,
 							placeholder: '请输入名称',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '部门',
+						name: 'depart',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入部门',
 							filterable: true,
 							disabled: false,
 						},
