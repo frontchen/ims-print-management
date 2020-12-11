@@ -138,6 +138,11 @@ export default {
 								path: '/basis/list',
 								label: 'Old',
 							},
+							{
+								title: '客户群组',
+								path: '/basis/group',
+								label: 'Old',
+							},
 						],
 					},
 				],

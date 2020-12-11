@@ -607,7 +607,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import './modal';
+@import '../styles/components/modal.less';
 /deep/.el-dialog {
 	position: absolute;
 	top: 50%;

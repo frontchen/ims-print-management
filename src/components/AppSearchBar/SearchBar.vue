@@ -3,9 +3,12 @@
 		<div class="search-bar-container">
 			<div class="leftWrapper">
 				<slot name="left">
-					<el-button :class="searchBtnCls" @click="search">{{
-						title
-					}}</el-button>
+					<el-button
+						v-if="showSearchBtn"
+						:class="searchBtnCls"
+						@click="search"
+						>{{ title }}</el-button
+					>
 					<div
 						:class="rowCls(item.className)"
 						v-for="(item, index) in searchList"
@@ -264,6 +267,7 @@
 							:disabled="item.attr.disabled"
 							:icon="item.attr.icon"
 							:autofocus="item.attr.autofocus"
+							@click="item.attr.onClick"
 							>{{ item.label }}</el-button
 						>
 
@@ -311,6 +315,10 @@ export default {
 		title: {
 			type: String,
 			default: '查询',
+		},
+		showSearchBtn: {
+			type: Boolean,
+			default: true,
 		},
 		disabled: {
 			type: Boolean,
