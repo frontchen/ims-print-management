@@ -103,6 +103,7 @@
 <script>
 // import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
+import AppDropMenu from 'Components/AppDropMenu/AppDropMenu'
 export default {
 	components: {
 		Submenu,
@@ -125,7 +126,7 @@ export default {
 							buttonType: 'primary',
 							icon: 'el-icon-edit',
 							onClick: () => {
-								this.showModal('add')
+								this.treeEditClick('增加同级')
 							},
 						},
 					},
@@ -202,10 +203,54 @@ export default {
 		// this.getTablesData()
 	},
 	methods: {
+		treeEditClick(name, data) {
+			let vm = this
+			// 新增、删除只允许在dev环境操作
+			if (name === '增加同级' || name === '增加下级' || name === '删除') {
+				if (process.env.VUE_APP_CURRENTMODE !== 'dev') {
+					vm.$confirm('您没有该模块的使用权限，请联系管理员', '提示信息', {
+						confirmButtonText: '关闭',
+						showClose: true,
+						type: 'warning',
+					})
+					return false
+				}
+			}
+			if (name === '删除') {
+				vm.$confirm('是否删除该项?', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning',
+				})
+					.then(() => {
+						vm.authDel(data.authorityId)
+					})
+					.catch(() => {
+						vm.$message({
+							type: 'info',
+							message: '已取消删除',
+						})
+					})
+
+				return false
+			}
+			// 修改、新增
+			if (name === '修改') {
+				vm.addType = 0
+			}
+			if (name === '增加同级') {
+				vm.addType = 1
+			}
+			if (name === '增加下级') {
+				vm.addType = 2
+			}
+			vm.rowItem = data
+			vm.showModal(name)
+		},
 		showModal(type) {
 			let vm = this
 			vm.modal1.isOpen = true
-			if (type === 'add') {
+			if (type === '增加同级') {
 				vm.$nextTick(() => {
 					console.log(vm.$refs.modal1)
 					vm.$refs.modal1.resetFields()
@@ -221,7 +266,8 @@ export default {
 				let forms = vm.modal1.form
 				if (!vm.treeData.length) {
 					vm.treeData.push({
-						label: forms.group,
+						name: forms.group,
+						type: 'group',
 					})
 					vm.modal1.isOpen = false
 					vm.$refs.search.disableSearchRight(['add'])
@@ -233,83 +279,60 @@ export default {
 		 **/
 		renderContent(h, { data }) {
 			let vm = this
-			let poptip = []
-			let status = '添加下级'
-			if (data['items'] && data['items'].length) {
-				status = '修改'
-			}
-			poptip.push(
-				h(
-					'div',
-					{
-						attrs: { class: 'ims-tree-pop-btn' },
-						on: {
-							click: () => {},
-						},
-					},
-					status
-				)
-			)
-			let content = []
-
-			content = [h('span', { class: 'ims-spec-span' }, data.label || '')]
-
-			let showClass =
-				vm.activeNodeKey === data.nodeKey
-					? 'ims-poptip-show'
-					: 'ims-poptip-hide'
-			// let showClass = vm.productId === data.productId ? 'ims-poptip-show' : 'ims-poptip-hide'
-
-			let editHtml = [
-				h('div', { class: ['edit'] }, [
-					h(
-						'el-popover',
-						{
-							props: {
-								trigger: 'hover',
-								placement: 'bottom',
-								width: 80,
-							},
-							class: showClass,
-						},
-						[
-							h('span', { class: 'ims-poptip-edit' }, '编辑'),
-							h('div', { slot: 'content' }, poptip),
-						]
-					),
-				]),
+			let icon = data.expand ? 'el-icon-folder-opened' : 'el-icon-folder'
+			let dropData = [
+				{ label: '增加同级', value: '增加同级' },
+				{ label: '增加下级', value: '增加下级' },
+				{ label: '修改', value: '修改' },
+				{ label: '删除', value: '删除' },
 			]
-
+			if (data.type === 'customer') {
+				icon = 'icon-add ims-tree-icon-point'
+				dropData = [
+					{ label: '增加同级', value: '增加同级' },
+					{ label: '修改', value: '修改' },
+					{ label: '删除', value: '删除' },
+				]
+			}
 			return h(
 				'span',
 				{
 					attrs: { class: 'ims-tree-line' },
 					on: {
-						mouseenter: () => {},
-						mouseleave: () => {},
-						click: () => {},
+						mouseenter: () => {
+							vm.showId = data.authorityId
+						},
+						mouseleave: () => {
+							vm.showId = 0
+						},
+						click: () => {
+							vm.showItemId =
+								vm.showItemId === data.authorityId ? 0 : data.authorityId
+						},
 					},
 				},
 				[
-					h(
-						'span',
-						{ attrs: { class: 'ims-tree-title-left' } },
-						data.productName
-					),
-					h('span', { attrs: { class: 'ims-tree-title-center' } }, [
-						h('div', { class: 'ims-center-div' }, content),
-					]),
-					h('div', { class: ['ims-tree-title-right'] }, [
-						// h('div', { class: 'ims-center-div' }, content),
-						h(
-							'div',
-							{
-								class: ['ims-center-div-right'],
+					h('i', {
+						attrs: {
+							class: `${icon}`,
+						},
+					}),
+					h('span', data.name),
+					h(AppDropMenu, {
+						attrs: {
+							class:
+								vm.showId === data.authorityId ||
+								vm.showItemId === data.authorityId
+									? 'ims-poptip-show'
+									: 'ims-poptip-hide',
+						},
+						props: { type: 'text', transfer: true, data: dropData, name: '' },
+						on: {
+							'on-click': (name) => {
+								vm.treeEditClick(name, data)
 							},
-							[...editHtml]
-						),
-					]),
-					h('span', { class: ['ims-tree-line-bg'] }),
+						},
+					}),
 				]
 			)
 		},
@@ -321,28 +344,24 @@ export default {
 .group-list {
 	min-height: 340px;
 	/deep/ .el-tree {
+		margin-top: 10px;
 		height: 340px;
-		box-sizing: border-box;
-		// margin-top: 10px;
-		margin: 5px 10px;
-		.el-tree-children:hover {
-			z-index: 1;
-		}
-		ul li {
-			margin: 0;
-			ul {
-				padding-left: 50px;
+		ul {
+			&.el-dropdown-menu {
+				padding: 0px;
+			}
+			li {
+				margin: 0;
+				&.el-dropdown-item {
+					padding: 7px 16px;
+				}
 			}
 		}
 		.ims-tree-line {
 			display: inline-block;
-			width: calc(100% - 15px);
-			padding: 10px 0px;
-			position: relative;
+			width: 100%;
+			padding: 5px 0px;
 			&:hover {
-				background-color: @ims-search-bar-bgColor;
-			}
-			&:hover ~ .el-tree-arrow {
 				background-color: @ims-search-bar-bgColor;
 			}
 			&:active {
@@ -350,122 +369,69 @@ export default {
 			}
 			.ims-poptip-show {
 				display: inline-block;
-				.ivu-poptip-popper {
-					min-width: 80px;
+				*:focus,
+				&:focus {
+					outline: none;
 				}
 			}
 			.ims-poptip-hide {
 				display: none;
-				// display: inline-block;
 			}
 			.ims-tree-icon {
 				margin-right: 5px;
 				font-size: 15px;
 				color: @ims-tree-color;
 			}
-			.ims-tree-pop-btn {
-				text-align: center;
-				cursor: pointer;
-				padding: 1px 0px;
-			}
-			.ims-tree-line-bg {
-				position: absolute;
-				width: 978px;
-				height: 39px;
-				background: @ims-search-bar-bgColor;
-				right: 0;
-				top: 0;
-				z-index: -1;
-				display: none;
-			}
-			&:hover .ims-tree-line-bg {
-				display: block;
+			.ims-tree-icon-point {
+				color: @ims-main-color;
 			}
 		}
-
-		.ims-tree-title-left {
-			display: inline-block;
-			min-width: 30px;
-			margin-right: 20px;
+		.el-icon {
+			font-family: 'mwfont' !important;
+		}
+		.el-tree-arrow {
+			width: 14px;
+			height: 26px;
+			line-height: 26px;
 			vertical-align: top;
 		}
-		.ims-tree-title-center {
-			display: inline-block;
-			.ims-center-div {
-				display: inline-block;
-				&-right {
-					float: right;
-				}
-			}
-			.ims-spec-span {
-				display: inline-block;
-				min-height: 12px;
-				min-width: 0px;
-				padding-right: 10px;
-				color: #999;
-			}
-		}
-		.ims-tree-title-right {
-			height: 100%;
-			vertical-align: top;
-			float: right;
-			.edit {
-				width: 40px;
-				text-align: center;
-				float: right;
-				cursor: pointer;
-				.ims-poptip-edit {
-					color: @ims-main-color;
-				}
-			}
-		}
-		// .el-tree-arrow {
-		//   // height: 26px;
-		//   // line-height: 26px;
-		//   // vertical-align: top;
-		// }
-		.ivu-icon-ios-arrow-forward:before {
+		.el-icon-ios-arrow-forward:before {
 			content: '\E652';
 		}
 		.el-tree-arrow-open {
 			i {
 				transform: none;
 			}
-			.ivu-icon-ios-arrow-forward:before {
+			.el-icon-ios-arrow-forward:before {
 				content: '\E653';
 			}
 		}
 
 		.el-tree-children {
 			position: relative;
-			&:first-child::before {
-				border: 0;
-			}
-			&::before {
+			z-index: 0;
+			&:not(:first-child)::before {
+				z-index: -1;
 				position: absolute;
 				content: '';
-				top: -10px;
+				top: 0px;
 				left: 6px;
-				width: 50px;
-				height: 30px;
+				width: 15px;
+				height: 15px;
 				border-left: 1px dotted #aaa;
 				border-bottom: 1px dotted #aaa;
 			}
-			// &:not(:last-child)::before {
-			// 	border-left: 0px;
-			// }
+			&:not(:last-child)::before {
+				border-left: 0px;
+			}
 			&:not(:last-child)::after {
+				z-index: -1;
 				position: absolute;
 				content: '';
 				top: 0px;
 				left: 6px;
 				bottom: 0px;
 				border-left: 1px dotted #aaa;
-				z-index: 1;
-			}
-			&:nth-child(3)::after {
-				top: -10px;
-				height: calc(100% + 12px);
 			}
 		}
 	}

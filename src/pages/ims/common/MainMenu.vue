@@ -143,6 +143,11 @@ export default {
 								path: '/basis/group',
 								label: 'Old',
 							},
+							{
+								title: '客户列表',
+								path: '/basis/customer',
+								label: 'Old',
+							},
 						],
 					},
 				],
