@@ -1,4 +1,5 @@
 /*======== Main Scss ========*/
+@el-css-prefix: el-;
 .app-card {
   background-color: @card-bg;
   border-radius: @card-border-radius;
@@ -46,6 +47,14 @@
   }
   &:hover {
     box-shadow: @card-hover-shadow;
+  }
+  .@{el-css-prefix}table{
+    .@{el-css-prefix}table__header-wrapper{
+     th{
+      height: 40px;
+      padding: 0;
+     }
+    }
   }
 }
 

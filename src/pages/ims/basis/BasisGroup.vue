@@ -17,7 +17,6 @@
 							:data="treeData"
 							node-key="id"
 							empty-text="暂无数据"
-							default-expand-all
 							:expand-on-click-node="false"
 							:render-content="renderContent"
 						>
@@ -38,50 +37,6 @@
 					<el-row>
 						<el-col :span="24">
 							<el-form-item
-								label="类别："
-								prop="category"
-								:label-width="modal1.formLabelWidth"
-							>
-								<el-select
-									v-model="modal1.form.category"
-									placeholder="请选择"
-									size="mini"
-								>
-									<el-option
-										v-for="item in modal1.category.options"
-										:key="item.value"
-										:label="item.label"
-										:value="item.value"
-									>
-									</el-option>
-								</el-select>
-							</el-form-item>
-						</el-col>
-					</el-row>
-					<el-row>
-						<el-col :span="24">
-							<el-form-item
-								v-if="modal1.form.category === 'customer'"
-								label="客户："
-								prop="customer"
-								:label-width="modal1.formLabelWidth"
-							>
-								<el-select
-									v-model="modal1.form.customer"
-									placeholder="请选择"
-									size="mini"
-								>
-									<el-option
-										v-for="item in modal1.customer.options"
-										:key="item.value"
-										:label="item.label"
-										:value="item.value"
-									>
-									</el-option>
-								</el-select>
-							</el-form-item>
-							<el-form-item
-								v-else
 								label="群组名称："
 								prop="group"
 								:label-width="modal1.formLabelWidth"
@@ -111,6 +66,13 @@ export default {
 
 	data() {
 		return {
+			// 操作类型 1、同级 2、下级
+			addType: 0,
+			rowItem: {},
+			// 滑动到某项时选中项
+			showId: 0,
+			// 点击某项
+			showItemId: 0,
 			// 搜索栏右侧
 			searchRight: {
 				values: {},
@@ -154,20 +116,6 @@ export default {
 				width: '500px',
 				formLabelWidth: '100px',
 				rules: {
-					category: [
-						{
-							required: true,
-							message: '类别不能为空',
-							trigger: 'blur',
-						},
-					],
-					customer: [
-						{
-							required: true,
-							message: '客户不能为空',
-							trigger: 'blur',
-						},
-					],
 					group: [
 						{
 							required: true,
@@ -177,8 +125,6 @@ export default {
 					],
 				},
 				form: {
-					category: '',
-					customer: '',
 					group: '',
 				},
 				category: {
@@ -193,9 +139,6 @@ export default {
 						},
 					],
 				},
-				customer: {
-					options: [],
-				},
 			},
 		}
 	},
@@ -205,17 +148,7 @@ export default {
 	methods: {
 		treeEditClick(name, data) {
 			let vm = this
-			// 新增、删除只允许在dev环境操作
-			if (name === '增加同级' || name === '增加下级' || name === '删除') {
-				if (process.env.VUE_APP_CURRENTMODE !== 'dev') {
-					vm.$confirm('您没有该模块的使用权限，请联系管理员', '提示信息', {
-						confirmButtonText: '关闭',
-						showClose: true,
-						type: 'warning',
-					})
-					return false
-				}
-			}
+
 			if (name === '删除') {
 				vm.$confirm('是否删除该项?', '提示', {
 					confirmButtonText: '确定',
@@ -247,17 +180,21 @@ export default {
 			vm.rowItem = data
 			vm.showModal(name)
 		},
-		showModal(type) {
+		showModal(name) {
 			let vm = this
 			vm.modal1.isOpen = true
-			if (type === '增加同级') {
-				vm.$nextTick(() => {
-					console.log(vm.$refs.modal1)
-					vm.$refs.modal1.resetFields()
-				})
-
-				//...
-			}
+			vm.$nextTick(() => {
+				console.log(vm.$refs.modal1)
+				vm.$refs.modal1.resetFields()
+				vm.modal1.form = {
+					group: '',
+				}
+				if (name === '修改') {
+					vm.modal1.form = {
+						group: vm.rowItem.group,
+					}
+				}
+			})
 		},
 		addSure() {
 			let vm = this
@@ -267,29 +204,60 @@ export default {
 				if (!vm.treeData.length) {
 					vm.treeData.push({
 						name: forms.group,
-						type: 'group',
+						level: 1,
+						value: 0,
+						parent: null,
+						children: [],
 					})
-					vm.modal1.isOpen = false
+
 					vm.$refs.search.disableSearchRight(['add'])
 				}
+				// let checkedValues = []
+				// if (vm.rowItem) {
+				// 	checkedValues = unit.getCascaderValue(vm.treeData, vm.rowItem.value)
+				// }
+				//修改
+				if (vm.addType === 0) {
+					//***
+					vm.rowItem.name = forms.group
+				}
+				//增加同级
+				if (vm.addType === 1) {
+					//***
+					// let parent=vm.rowItem.parent
+				}
+				//增加下级
+				if (vm.addType === 2) {
+					//***
+
+					vm.rowItem.children.push({
+						name: forms.group,
+						parent: vm.rowItem.name,
+						parentLevel: vm.rowItem.level,
+						value: forms.group,
+						level: vm.rowItem.level + 1,
+						children: [],
+					})
+				}
+				vm.modal1.isOpen = false
+				console.log(vm.rowItem)
 			})
 		},
 		/**
 		 *  获取BOM---编辑--树
 		 **/
-		renderContent(h, { data }) {
+		renderContent(h, { node, data }) {
 			let vm = this
-			let icon = data.expand ? 'el-icon-folder-opened' : 'el-icon-folder'
+			let icon = node.expanded ? 'el-icon-folder-opened' : 'el-icon-folder'
 			let dropData = [
 				{ label: '增加同级', value: '增加同级' },
 				{ label: '增加下级', value: '增加下级' },
 				{ label: '修改', value: '修改' },
 				{ label: '删除', value: '删除' },
 			]
-			if (data.type === 'customer') {
-				icon = 'icon-add ims-tree-icon-point'
+			if (data.level === 1) {
 				dropData = [
-					{ label: '增加同级', value: '增加同级' },
+					{ label: '增加下级', value: '增加下级' },
 					{ label: '修改', value: '修改' },
 					{ label: '删除', value: '删除' },
 				]
@@ -300,14 +268,13 @@ export default {
 					attrs: { class: 'ims-tree-line' },
 					on: {
 						mouseenter: () => {
-							vm.showId = data.authorityId
+							vm.showId = data.name
 						},
 						mouseleave: () => {
 							vm.showId = 0
 						},
 						click: () => {
-							vm.showItemId =
-								vm.showItemId === data.authorityId ? 0 : data.authorityId
+							vm.showItemId = vm.showItemId === data.name ? 0 : data.name
 						},
 					},
 				},
@@ -321,8 +288,7 @@ export default {
 					h(AppDropMenu, {
 						attrs: {
 							class:
-								vm.showId === data.authorityId ||
-								vm.showItemId === data.authorityId
+								vm.showId === data.name || vm.showItemId === data.name
 									? 'ims-poptip-show'
 									: 'ims-poptip-hide',
 						},

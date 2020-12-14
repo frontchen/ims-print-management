@@ -577,7 +577,7 @@ export default {
 		resetFields() {
 			const vm = this
 			const col = vm.col
-			vm.$refs.form.resetFields()
+
 			vm.data.forEach((v, i) => {
 				v.value = vm.formValidate[v.label]
 				// 清除可输可选项
@@ -593,6 +593,7 @@ export default {
 				}
 			})
 			vm.isChangeValue = true
+			vm.$refs.form.resetFields()
 		},
 	},
 	watch: {

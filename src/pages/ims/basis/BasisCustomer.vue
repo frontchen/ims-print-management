@@ -13,7 +13,6 @@
 						:values="searchValues"
 					>
 					</app-search-bar>
-					<div class="white-space"></div>
 
 					<el-table :data="items" style="width: 100%" height="400">
 						<el-table-column
@@ -212,6 +211,15 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
+					group: [
+						{
+							required: true,
+							type: 'array',
+							message: '群组名称不能为空',
+							trigger: 'change',
+							min: 1,
+						},
+					],
 					mobile: [
 						{
 							required: true,
@@ -220,7 +228,7 @@ export default {
 							trigger: 'blur',
 						},
 					],
-					name: [
+					customer: [
 						{
 							required: true,
 							type: 'string',
@@ -248,9 +256,22 @@ export default {
 				sendData: {}, // 修改联系信息暂存数据
 				data: [
 					{
+						type: 'cascader',
+						label: '群组名称',
+						name: 'group',
+						value: [],
+						attr: {
+							clearable: true,
+							placeholder: '请选择群组名称',
+							data: [],
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
 						type: 'input',
 						label: '客户名称',
-						name: 'name',
+						name: 'customer',
 						value: '',
 						attr: {
 							clearable: true,
