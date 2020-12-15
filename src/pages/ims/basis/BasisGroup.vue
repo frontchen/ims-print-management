@@ -29,34 +29,24 @@
 				v-loading="modal1.isRequest"
 				:loading="modal1.loading"
 				:title="modal1.title"
+				:labelWidth="modal1.labelWidth"
+				:label-position="modal1.labelPosition"
 				:width="modal1.width"
+				:inline="modal1.inline"
 				v-model="modal1.isOpen"
+				:col="modal1.col"
+				:data="modal1.data"
+				:values="modal1.values"
 				@on-ok="addSure"
-			>
-				<el-form ref="modal1" :model="modal1.form" :rules="modal1.rules">
-					<el-row>
-						<el-col :span="24">
-							<el-form-item
-								label="群组名称："
-								prop="group"
-								:label-width="modal1.formLabelWidth"
-							>
-								<el-input
-									size="mini"
-									v-model="modal1.form.group"
-									placeholder="请输入内容"
-								></el-input>
-							</el-form-item>
-						</el-col>
-					</el-row>
-				</el-form>
-			</app-modal>
+				:ruleValidate="modal1.ruleValidate"
+				ref="modal1"
+			></app-modal>
 		</v-container>
 	</div>
 </template>
 
 <script>
-// import unit from '@/services/unit'
+import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import AppDropMenu from 'Components/AppDropMenu/AppDropMenu'
 export default {
@@ -66,8 +56,8 @@ export default {
 
 	data() {
 		return {
-			// 操作类型 1、同级 2、下级
-			addType: 0,
+			// 操作类型
+			addType: '',
 			rowItem: {},
 			// 滑动到某项时选中项
 			showId: 0,
@@ -88,7 +78,7 @@ export default {
 							buttonType: 'primary',
 							icon: 'el-icon-edit',
 							onClick: () => {
-								this.treeEditClick('增加同级')
+								this.treeEditClick('新增')
 							},
 						},
 					},
@@ -110,42 +100,113 @@ export default {
 				},
 			],
 			treeData: [],
+			// 新增
 			modal1: {
 				title: '新增',
+				loading: false,
+				isRequest: false,
 				isOpen: false,
-				width: '500px',
-				formLabelWidth: '100px',
-				rules: {
-					group: [
+				inline: true,
+				width: '600px',
+				col: 1,
+				labelWidth: '100px',
+				labelPosition: 'right',
+				values: {},
+				ruleValidate: {
+					groupNo: [
+						{
+							type: 'string',
+							message: '群组编号最多125个字',
+							trigger: 'blur',
+							max: 125,
+						},
+					],
+					groupName: [
 						{
 							required: true,
-							message: '群组不能为空',
+							type: 'string',
+							message: '群组名称不能为空',
 							trigger: 'blur',
 						},
-					],
-				},
-				form: {
-					group: '',
-				},
-				category: {
-					options: [
 						{
-							label: '群组名称',
-							value: 'group',
-						},
-						{
-							label: '客户名称',
-							value: 'customer',
+							type: 'string',
+							message: '群组名称最多125个字',
+							trigger: 'blur',
+							max: 125,
 						},
 					],
+					remark: [
+						{
+							type: 'string',
+							message: '备注最多125个字',
+							trigger: 'blur',
+							max: 125,
+						},
+					],
 				},
+				sendData: {}, // 修改联系信息暂存数据
+				data: [
+					{
+						type: 'input',
+						label: '群组名称',
+						name: 'groupName',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入群组名称',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '群组编号',
+						name: 'groupNo',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入群组编号',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '备注',
+						name: 'remark',
+						value: '',
+						attr: {
+							type: 'textarea',
+							clearable: true,
+							placeholder: '请输入单位',
+							filterable: true,
+							disabled: false,
+						},
+					},
+				],
 			},
 		}
 	},
 	mounted() {
-		// this.getTablesData()
+		this.getList()
 	},
 	methods: {
+		getList() {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: {},
+			}
+			vm.api.basis.customerGroups(params).then(
+				(res) => {
+					console.log(['getList', res])
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+			// vm.$refs.search.disableSearchRight(['add'])
+		},
 		treeEditClick(name, data) {
 			let vm = this
 
@@ -156,7 +217,7 @@ export default {
 					type: 'warning',
 				})
 					.then(() => {
-						vm.authDel(data.authorityId)
+						vm.delCustomerGroup(data)
 					})
 					.catch(() => {
 						vm.$message({
@@ -167,81 +228,81 @@ export default {
 
 				return false
 			}
-			// 修改、新增
-			if (name === '修改') {
-				vm.addType = 0
-			}
-			if (name === '增加同级') {
-				vm.addType = 1
-			}
-			if (name === '增加下级') {
-				vm.addType = 2
-			}
+			vm.addType = name
+
 			vm.rowItem = data
 			vm.showModal(name)
 		},
-		showModal(name) {
+		showModal() {
 			let vm = this
 			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
 				console.log(vm.$refs.modal1)
 				vm.$refs.modal1.resetFields()
-				vm.modal1.form = {
-					group: '',
-				}
-				if (name === '修改') {
-					vm.modal1.form = {
-						group: vm.rowItem.group,
-					}
-				}
 			})
 		},
-		addSure() {
+		//新增、修改
+		addSure(values) {
 			let vm = this
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return
-				let forms = vm.modal1.form
-				if (!vm.treeData.length) {
-					vm.treeData.push({
-						name: forms.group,
-						level: 1,
-						value: 0,
-						parent: null,
-						children: [],
-					})
-
-					vm.$refs.search.disableSearchRight(['add'])
+				let params = {
+					reqtime: unit.formatDate(new Date()),
+					bizContent: {
+						groupName: values.groupName,
+						groupNo: values.groupNo,
+						remark: values.remark,
+					},
 				}
-				// let checkedValues = []
-				// if (vm.rowItem) {
-				// 	checkedValues = unit.getCascaderValue(vm.treeData, vm.rowItem.value)
-				// }
-				//修改
-				if (vm.addType === 0) {
-					//***
-					vm.rowItem.name = forms.group
+				let path = 'createCustomerGroup'
+				if (['新增', '增加同级', '增加下级'].includes(vm.addType)) {
+					if (vm.addType === '新增') {
+						params.bizContent.parentId = 0
+					}
+					if (vm.addType === '增加下级') {
+						params.bizContent.parentId = vm.rowItem.id
+					}
+					if (vm.addType === '增加同级') {
+						//...
+					}
+					path = 'createCustomerGroup'
+				} else {
+					//修改
+					path = 'updateCustomerGroup'
+					params.bizContent.id = vm.rowItem.id
 				}
-				//增加同级
-				if (vm.addType === 1) {
-					//***
-					// let parent=vm.rowItem.parent
-				}
-				//增加下级
-				if (vm.addType === 2) {
-					//***
-
-					vm.rowItem.children.push({
-						name: forms.group,
-						parent: vm.rowItem.name,
-						parentLevel: vm.rowItem.level,
-						value: forms.group,
-						level: vm.rowItem.level + 1,
-						children: [],
-					})
-				}
-				vm.modal1.isOpen = false
+				console.log(['path', path, vm.api.basis[path]])
 				console.log(vm.rowItem)
+
+				vm.api.basis[path](params).then(
+					(res) => {
+						console.log(['add', res])
+						vm.getList()
+						vm.$message.success('操作成功!')
+						vm.modal1.isOpen = false
+					},
+					(err) => {
+						vm.$message.error(err)
+					}
+				)
+				//增加下级
 			})
+		},
+		//删除
+		delCustomerGroup(item) {
+			let vm = this
+			let params = {
+				id: item.id,
+			}
+			vm.api.basis.delCustomerGroup(params).then(
+				() => {
+					vm.getList()
+					vm.$message.success('删除成功!')
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
 		},
 		/**
 		 *  获取BOM---编辑--树
@@ -268,13 +329,13 @@ export default {
 					attrs: { class: 'ims-tree-line' },
 					on: {
 						mouseenter: () => {
-							vm.showId = data.name
+							vm.showId = data.id
 						},
 						mouseleave: () => {
 							vm.showId = 0
 						},
 						click: () => {
-							vm.showItemId = vm.showItemId === data.name ? 0 : data.name
+							vm.showItemId = vm.showItemId === data.id ? 0 : data.id
 						},
 					},
 				},
@@ -284,13 +345,11 @@ export default {
 							class: `${icon}`,
 						},
 					}),
-					h('span', data.name),
+					h('span', data.groupName),
 					h(AppDropMenu, {
 						attrs: {
 							class:
-								vm.showId === data.name || vm.showItemId === data.name
-									? 'ims-poptip-show'
-									: 'ims-poptip-hide',
+								vm.showId === data.id ? 'ims-poptip-show' : 'ims-poptip-hide',
 						},
 						props: { type: 'text', transfer: true, data: dropData, name: '' },
 						on: {

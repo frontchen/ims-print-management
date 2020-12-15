@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import CryptoJS from 'crypto-js'
-
+import filters from './filters'
 const unit = {
+  ...filters,
   // des加密
   desEncrypt: (str, key) => {
     return CryptoJS.DES.encrypt(str, CryptoJS.enc.Utf8.parse(key), {

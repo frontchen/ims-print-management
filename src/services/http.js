@@ -55,10 +55,12 @@ instance.interceptors.response.use(
 const http = {
   formatData: res => {
     return new Promise((resolve, reject) => {
-      console.log(['res', res])
       if (res.status === 200) {
         let data = res.data.data || res.data
-        return resolve(data)
+        if (res.data.code * 1 !== -1) {
+          return resolve(data)
+        }
+        return reject(res.data.msg || networkErr)
       } else {
         return reject(res.statusText)
       }
