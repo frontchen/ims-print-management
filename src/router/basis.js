@@ -2,6 +2,7 @@
 const BasisList = () => import('Ims/basis/BasisList') // 工艺列表
 const BasisGroup = () => import('Ims/basis/BasisGroup') // 群组名称
 const BasisCustomer = () => import('Ims/basis/BasisCustomer') // 客户列表
+const BasisPaymentMethod = () => import('Ims/basis/BasisPaymentMethod') // 客户列表
 const basis = [
   {
     path: '/basis/list',
@@ -20,6 +21,12 @@ const basis = [
     name: 'basis-customer',
     title: '客户列表',
     component: BasisCustomer
+  },
+  {
+    path: '/basis/paymentMethod',
+    name: 'basis-paymentMethod',
+    title: '付款方式列表',
+    component: BasisPaymentMethod
   }
 ]
 

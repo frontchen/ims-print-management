@@ -73,7 +73,6 @@
 </template>
 
 <script>
-import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -91,12 +90,12 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'customer',
+					name: 'company',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '客户名称',
+						placeholder: '公司名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
@@ -156,34 +155,44 @@ export default {
 			],
 			headers: [
 				{
-					text: '时间',
+					text: '客户编号',
 					align: 'left',
 					sortable: false,
-					value: 'id',
+					value: 'customerNo',
 				},
-				{ text: '客户名称', value: 'status' },
+				{ text: '公司名称', value: 'company' },
 				{
-					text: '联系地址',
-					value: 'time',
-					render: (h, params) => {
-						return this.renderDate(h, params)
-					},
+					text: '公司地址',
+					value: 'companyAddress',
 				},
 				{
 					text: '联系人',
-					value: 'time',
-					render: (h, params) => {
-						return this.renderDate(h, params)
-					},
+					value: 'contact',
 				},
 				{
-					text: '联系方式',
-					value: 'recipientInfo',
-					render: (h, params) => {
-						return this.renderRecipientInfo(h, params)
-					},
+					text: '电话',
+					value: 'telephone',
 				},
-
+				{
+					text: '备注',
+					value: 'remark',
+				},
+				{
+					text: '付款方式',
+					value: 'paymentMethod',
+				},
+				{
+					text: '客户分组',
+					value: 'customerGroup',
+				},
+				{
+					text: '账期天数',
+					value: 'accountDays',
+				},
+				{
+					text: '邮箱',
+					value: 'email',
+				},
 				{
 					text: '操作',
 					align: 'center',
@@ -211,7 +220,7 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					group: [
+					customerGroup: [
 						{
 							required: true,
 							type: 'array',
@@ -220,23 +229,29 @@ export default {
 							min: 1,
 						},
 					],
-					mobile: [
+					telephone: [
 						{
 							required: true,
 							type: 'string',
-							message: '联系方式不能为空',
+							message: '电话不能为空',
+							trigger: 'blur',
+						},
+						{
+							pattern: unit.mobile,
+							type: 'string',
+							message: '电话格式不正确',
 							trigger: 'blur',
 						},
 					],
-					customer: [
+					company: [
 						{
 							required: true,
 							type: 'string',
-							message: '客户名称不能为空',
+							message: '公司名称不能为空',
 							trigger: 'blur',
 						},
 					],
-					linker: [
+					contact: [
 						{
 							required: true,
 							type: 'string',
@@ -244,11 +259,33 @@ export default {
 							trigger: 'blur',
 						},
 					],
-					address: [
+					companyAddress: [
+						{
+							type: 'string',
+							message: '公司地址不能为空',
+							trigger: 'blur',
+						},
+					],
+					paymentMethod: [
 						{
 							required: true,
 							type: 'string',
-							message: '联系地址不能为空',
+							message: '付款方式不能为空',
+							trigger: 'change',
+						},
+					],
+					email: [
+						{
+							type: 'email',
+							message: '邮箱格式不正确',
+							trigger: 'blur',
+						},
+					],
+					accountDays: [
+						{
+							pattern: unit.posInt,
+							type: 'string',
+							message: '账期天数格式不正确',
 							trigger: 'blur',
 						},
 					],
@@ -258,7 +295,7 @@ export default {
 					{
 						type: 'cascader',
 						label: '群组名称',
-						name: 'group',
+						name: 'customerGroup',
 						value: [],
 						attr: {
 							clearable: true,
@@ -270,24 +307,24 @@ export default {
 					},
 					{
 						type: 'input',
-						label: '客户名称',
-						name: 'customer',
+						label: '公司名称',
+						name: 'company',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入客户名称',
+							placeholder: '请输入公司名称',
 							filterable: true,
 							disabled: false,
 						},
 					},
 					{
 						type: 'input',
-						label: '联系方式',
-						name: 'mobile',
+						label: '电话',
+						name: 'telephone',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入联系方式',
+							placeholder: '请输入电话',
 							filterable: true,
 							disabled: false,
 						},
@@ -295,7 +332,7 @@ export default {
 					{
 						type: 'input',
 						label: '联系人',
-						name: 'linker',
+						name: 'contact',
 						value: '',
 						attr: {
 							clearable: true,
@@ -305,13 +342,78 @@ export default {
 						},
 					},
 					{
-						type: 'input',
-						label: '联系地址',
-						name: 'address',
+						type: 'select',
+						label: '付款方式',
+						name: 'paymentMethod',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入联系地址',
+							placeholder: '请选择付款方式',
+							options: [],
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '公司地址',
+						name: 'companyAddress',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入公司地址',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '收货地址',
+						name: 'receiveAddress',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入收货地址',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '账期天数',
+						name: 'accountDays',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入账期天数',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '邮箱',
+						name: 'email',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入邮箱',
+							filterable: true,
+							disabled: false,
+						},
+					},
+
+					{
+						type: 'input',
+						label: '备注',
+						name: 'remark',
+						value: '',
+						attr: {
+							type: 'textarea',
+							maxlength: 120,
+							minlength: 1,
+							clearable: true,
+							placeholder: '请输入备注',
 							filterable: true,
 							disabled: false,
 						},
@@ -327,111 +429,148 @@ export default {
 		//搜索栏查询
 		getSearch() {},
 		// 搜索栏按钮点击
-		showModal(type) {
+		showModal(type, row) {
+			let vm = this
 			if (type === 'add') {
-				this.modal1.isOpen = true
-				this.$nextTick(() => {
-					this.$refs.modal1.resetFields()
-				})
+				vm.modal1.title = '新增'
 			}
+			if (type === 'modify') {
+				vm.modal1.sendData = row
+				vm.modal1.title = '修改'
+				//客户群组
+				let customerGroupData = vm.modal1.data.find(
+					(v) => v.name === 'customerGroup'
+				)
+				customerGroupData = customerGroupData ? customerGroupData.attr.data : []
+				let customerGroupChecked = unit.getCascaderValue(
+					customerGroupData,
+					row.customerGroup
+				)
+				vm.modal1.values = {
+					//客户分组
+					customerGroup: customerGroupChecked.map((v) => v.value),
+					customerNo: row.customerNo, //客户编号
+					company: row.company, //公司名
+					telephone: row.telephone, //电话
+					contact: row.contact, //联系人
+					remark: row.remark, //备注
+					companyAddress: row.companyAddress, //公司地址
+					receiveAddress: row.receiveAddress, //收货地址
+					paymentMethod: row.paymentId, //付款方式
+					accountDays: row.accountDays, //账期天数
+					email: row.email, //邮箱
+				}
+			}
+			vm.modal1.isOpen = true
+			vm.$nextTick(() => {
+				vm.$refs.modal1.resetFields()
+			})
 		},
 		// 搜索栏select cascader切换事件
 		changeSearchList() {},
-		getTablesData(page = 1) {
+		getList(page = 1) {
 			let vm = this
-			let status = vm.tabs[vm.checkedTab]
 			let params = {
-				page,
-				status,
+				pageNo: page,
+				pageSize: vm.pageSize,
 			}
-			vm.api.order.productsOrders(params).then(
+			vm.api.basis.customers(params).then(
 				(res) => {
-					let list = res ? (Array.isArray(res.results) ? res.results : []) : []
+					if (!res) return false
+					let list = res.item || []
 					vm.items = list
-					vm.total = res.count || 1
-					console.log(['list', list])
+					vm.total = res.total || 1
+					vm.pageIndex = res.pageNo
 				},
 				(err) => {
 					vm.$message.error(err)
 				}
 			)
 		},
-		// 条件查询
-		goSearch() {},
-
+		delCustomer(row) {
+			let vm = this
+			let params = {
+				id: row.id,
+			}
+			vm.api.basis.delCustomer(params).then(
+				() => {
+					vm.getList()
+					vm.$message.success('删除成功!')
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
 		handleSizeChange(val) {
 			console.log(`每页 ${val} 条`)
 		},
 		handleCurrentChange(val) {
-			this.getTablesData(val)
+			this.getList(val)
+		},
+		addSure(values) {
+			let vm = this
+			vm.$refs.modal1.validate((valid) => {
+				if (!valid) return false
+				//客户群组
+				let customerGroupData = vm.modal1.data.find(
+					(v) => v.name === 'customerGroup'
+				)
+				customerGroupData = customerGroupData ? customerGroupData.attr.data : []
+				let customerGroupItem = unit.getCascaderData(
+					values.customerGroup,
+					customerGroupData
+				)
+				customerGroupItem = customerGroupItem.length
+					? customerGroupItem[customerGroupItem.length - 1]
+					: {}
+				//付款方式
+				let paymentMethodData = vm.modal1.data.find(
+					(v) => v.name === 'paymentMethod'
+				)
+				paymentMethodData = paymentMethodData
+					? paymentMethodData.attr.options
+					: []
+				let paymentMethodItem =
+					paymentMethodData.find((v) => v.value === values.paymentMethod) || {}
+				let params = {
+					customerGroupId: customerGroupItem.value, //客户分组
+					customerGroup: customerGroupItem.label,
+					customerNo: values.customerNo, //客户编号
+					company: values.company, //公司名
+					telephone: values.telephone, //电话
+					contact: values.contact, //联系人
+					remark: values.remark, //备注
+					companyAddress: values.companyAddress, //公司地址
+					receiveAddress: values.receiveAddress, //收货地址
+					paymentId: paymentMethodItem.value, //付款方式
+					paymentMethod: paymentMethodItem.label,
+					accountDays: values.accountDays, //账期天数
+					email: values.email, //邮箱
+				}
+				let row = vm.modal1.sendData
+				let path = 'createCustomer'
+				if (vm.modal1.title === '新增') {
+					path = 'createCustomer'
+				}
+				if (vm.modal1.title === '修改') {
+					path = 'updateCustomer'
+					params.id = row.id
+				}
+				vm.api.basis[path](params).then(
+					() => {
+						vm.getList()
+						vm.$message.success('操作成功!')
+						vm.modal1.isOpen = false
+					},
+					(err) => {
+						vm.$message.error(err)
+					}
+				)
+			})
 		},
 		selectChange() {},
-		addSure() {},
-		//列表显示下单时间
-		renderDate(h, params) {
-			let row = params.row
-			if (unit.isEmptyObject(row)) {
-				return false
-			}
-			return h('span', filters.formatDate(row.created_at || ''))
-		},
-		// 列表显示收货人信息
-		renderRecipientInfo(h, params) {
-			let row = params.row
-			if (unit.isEmptyObject(row)) {
-				return false
-			}
-			return h('div', [
-				h('p', row.receiver_name || ''),
-				h('p', row.receiver_phone || ''),
-			])
-		},
-		// 列表显示客户信息
-		renderCustomer(h, params) {
-			let row = params.row
-			if (unit.isEmptyObject(row)) {
-				return false
-			}
-			return h('div', [
-				h('p', row.delivery_company || ''),
-				h('p', row.delivery_number || ''),
-			])
-		},
-		// 列表显示发货时间
-		renderDeliveryTime(h, params) {
-			let row = params.row
-			if (unit.isEmptyObject(row)) {
-				return false
-			}
-			return h('span', filters.formatDate(row.delivery_at || ''))
-		},
-		// 列表显示价格
-		renderPrice(h, params) {
-			let row = params.row
-			if (unit.isEmptyObject(row)) {
-				return false
-			}
-			return h(
-				'div',
-				{
-					attrs: {
-						class: 'commodity-price-item',
-					},
-				},
-				[
-					h('span', '¥'),
-					h(
-						'span',
-						{
-							attrs: {
-								class: 'commodity-price',
-							},
-						},
-						filters.currency(row.price / 100, { format: true, prefix: '' })
-					),
-				]
-			)
-		},
+
 		renderBtn(h, params) {
 			let vm = this
 			let row = params.row
@@ -466,11 +605,11 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.getOrderDetail(row)
+											vm.delCustomer(row)
 										},
 									},
 								},
-								'查看'
+								'删除'
 							),
 						]
 					),
@@ -492,7 +631,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.getOrderDetail(row)
+											vm.showModal('modify', row)
 										},
 									},
 								},

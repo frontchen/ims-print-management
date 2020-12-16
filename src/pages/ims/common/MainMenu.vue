@@ -148,6 +148,11 @@ export default {
 								path: '/basis/customer',
 								label: 'Old',
 							},
+							{
+								title: '付款方式',
+								path: '/basis/paymentMethod',
+								label: 'Old',
+							},
 						],
 					},
 				],
