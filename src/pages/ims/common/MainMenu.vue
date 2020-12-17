@@ -153,6 +153,26 @@ export default {
 								path: '/basis/paymentMethod',
 								label: 'Old',
 							},
+							{
+								title: '开料尺寸',
+								path: '/basis/cutSize',
+								label: 'Old',
+							},
+							{
+								title: '部门列表',
+								path: '/basis/department',
+								label: 'Old',
+							},
+							{
+								title: '刀版',
+								path: '/basis/knifePlate',
+								label: 'Old',
+							},
+							{
+								title: '物料',
+								path: '/basis/material',
+								label: 'Old',
+							},
 						],
 					},
 				],

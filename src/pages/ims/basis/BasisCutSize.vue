@@ -98,12 +98,12 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'paymentMethod',
+					name: 'knifePlate',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '付款方式名称',
+						placeholder: '开料尺寸名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
@@ -157,7 +157,7 @@ export default {
 					path: '',
 				},
 				{
-					name: '付款方式',
+					name: '开料尺寸',
 					path: '',
 				},
 			],
@@ -177,8 +177,8 @@ export default {
 				},
 				{ text: '创建人', value: 'creator' },
 				{
-					text: '付款方式',
-					value: 'paymentMethod',
+					text: '开料尺寸',
+					value: 'knifePlate',
 				},
 
 				{
@@ -208,11 +208,11 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					paymentMethod: [
+					knifePlate: [
 						{
 							required: true,
 							type: 'string',
-							message: '付款方式不能为空',
+							message: '开料尺寸不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -221,8 +221,8 @@ export default {
 				data: [
 					{
 						type: 'input',
-						label: '付款方式',
-						name: 'paymentMethod',
+						label: '开料尺寸',
+						name: 'knifePlate',
 						value: '',
 						attr: {
 							clearable: true,
@@ -251,7 +251,7 @@ export default {
 				vm.modal1.sendData = row
 				vm.modal1.title = '修改'
 				vm.modal1.values = {
-					paymentMethod: row.id,
+					knifePlate: row.knifePlate,
 				}
 			}
 			vm.modal1.isOpen = true
@@ -267,7 +267,7 @@ export default {
 				pageNo: page,
 				pageSize: vm.pageSize,
 			}
-			vm.api.basis.paymentMethods(params).then(
+			vm.api.basis.cutSizes(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
@@ -280,12 +280,12 @@ export default {
 				}
 			)
 		},
-		delPaymentMethod(row) {
+		delCutSize(row) {
 			let vm = this
 			let params = {
 				id: row.id,
 			}
-			vm.api.basis.delPaymentMethod(params).then(
+			vm.api.basis.delCutSize(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -306,15 +306,15 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					paymentMethod: values.paymentMethod,
+					knifePlate: values.knifePlate,
 				}
 				let row = vm.modal1.sendData
-				let path = 'createPaymentMethod'
+				let path = 'createCutSize'
 				if (vm.modal1.title === '新增') {
-					path = 'createPaymentMethod'
+					path = 'createCutSize'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updatePaymentMethod'
+					path = 'updateCutSize'
 					params.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -365,7 +365,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delPaymentMethod(row)
+											vm.delCutSize(row)
 										},
 									},
 								},
@@ -391,7 +391,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.updatePaymentMethod(row)
+											vm.showModal('modify', row)
 										},
 									},
 								},

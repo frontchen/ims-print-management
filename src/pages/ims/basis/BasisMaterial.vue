@@ -81,6 +81,7 @@
 </template>
 
 <script>
+import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -90,7 +91,11 @@ export default {
 		Submenu,
 		Expand,
 	},
-
+	filters: {
+		price(val) {
+			return filters.currency(val, { format: true, prefix: '' })
+		},
+	},
 	data() {
 		return {
 			searchValues: {},
@@ -98,12 +103,12 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'paymentMethod',
+					name: 'materialName',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '付款方式名称',
+						placeholder: '物料名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
@@ -157,7 +162,7 @@ export default {
 					path: '',
 				},
 				{
-					name: '付款方式',
+					name: '物料',
 					path: '',
 				},
 			],
@@ -172,15 +177,22 @@ export default {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						return h('span', unit.formatDate(params.row.createTime))
+						return h('span', unit.formatDate(params.row.create))
 					},
 				},
 				{ text: '创建人', value: 'creator' },
 				{
-					text: '付款方式',
-					value: 'paymentMethod',
+					text: '物料编号',
+					value: 'materialNo',
 				},
-
+				{
+					text: '物料',
+					value: 'materialName',
+				},
+				{
+					text: '物料群组',
+					value: 'materialGroup',
+				},
 				{
 					text: '操作',
 					align: 'center',
@@ -208,11 +220,27 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					paymentMethod: [
+					materialGroup: [
+						{
+							type: 'array',
+							min: 1,
+							message: '物料群组不能为空',
+							trigger: 'blur',
+						},
+					],
+					materialName: [
 						{
 							required: true,
 							type: 'string',
-							message: '付款方式不能为空',
+							message: '物料不能为空',
+							trigger: 'blur',
+						},
+					],
+					materialNo: [
+						{
+							required: true,
+							type: 'string',
+							message: '物料编号不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -220,9 +248,34 @@ export default {
 				sendData: {}, // 修改联系信息暂存数据
 				data: [
 					{
+						type: 'cascader',
+						label: '物料群组',
+						name: 'materialGroup',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请选择物料群组',
+							filterable: true,
+							data: [],
+							disabled: false,
+						},
+					},
+					{
 						type: 'input',
-						label: '付款方式',
-						name: 'paymentMethod',
+						label: '物料编号',
+						name: 'materialNo',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入物料编号',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '物料',
+						name: 'materialName',
 						value: '',
 						attr: {
 							clearable: true,
@@ -251,7 +304,7 @@ export default {
 				vm.modal1.sendData = row
 				vm.modal1.title = '修改'
 				vm.modal1.values = {
-					paymentMethod: row.id,
+					materialName: row.id,
 				}
 			}
 			vm.modal1.isOpen = true
@@ -267,7 +320,7 @@ export default {
 				pageNo: page,
 				pageSize: vm.pageSize,
 			}
-			vm.api.basis.paymentMethods(params).then(
+			vm.api.basis.materialNames(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
@@ -280,12 +333,12 @@ export default {
 				}
 			)
 		},
-		delPaymentMethod(row) {
+		delmaterialName(row) {
 			let vm = this
 			let params = {
 				id: row.id,
 			}
-			vm.api.basis.delPaymentMethod(params).then(
+			vm.api.basis.delmaterialName(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -305,16 +358,32 @@ export default {
 			let vm = this
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
+
+				//客户群组
+				let materialGroupData = vm.modal1.data.find(
+					(v) => v.name === 'materialGroup'
+				)
+				materialGroupData = materialGroupData ? materialGroupData.attr.data : []
+				let materialGroupItem = unit.getCascaderData(
+					values.materialGroup,
+					materialGroupData
+				)
+				materialGroupItem = materialGroupItem.length
+					? materialGroupItem[materialGroupItem.length - 1]
+					: {}
 				let params = {
-					paymentMethod: values.paymentMethod,
+					materialName: values.materialName,
+					materialNo: values.materialNo,
+					materialGroup: materialGroupItem.label,
+					materialGroupId: materialGroupItem.value,
 				}
 				let row = vm.modal1.sendData
-				let path = 'createPaymentMethod'
+				let path = 'creatematerialName'
 				if (vm.modal1.title === '新增') {
-					path = 'createPaymentMethod'
+					path = 'creatematerialName'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updatePaymentMethod'
+					path = 'updatematerialName'
 					params.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -365,7 +434,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delPaymentMethod(row)
+											vm.delmaterialName(row)
 										},
 									},
 								},
@@ -391,7 +460,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.updatePaymentMethod(row)
+											vm.updatematerialName(row)
 										},
 									},
 								},

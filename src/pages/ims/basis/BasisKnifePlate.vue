@@ -81,6 +81,7 @@
 </template>
 
 <script>
+import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -90,7 +91,11 @@ export default {
 		Submenu,
 		Expand,
 	},
-
+	filters: {
+		price(val) {
+			return filters.currency(val, { format: true, prefix: '' })
+		},
+	},
 	data() {
 		return {
 			searchValues: {},
@@ -98,12 +103,12 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'paymentMethod',
+					name: 'knifePlate',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '付款方式名称',
+						placeholder: '刀版名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
@@ -157,7 +162,7 @@ export default {
 					path: '',
 				},
 				{
-					name: '付款方式',
+					name: '刀版',
 					path: '',
 				},
 			],
@@ -172,13 +177,13 @@ export default {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						return h('span', unit.formatDate(params.row.createTime))
+						return h('span', unit.formatDate(params.row.create))
 					},
 				},
 				{ text: '创建人', value: 'creator' },
 				{
-					text: '付款方式',
-					value: 'paymentMethod',
+					text: '刀版',
+					value: 'knifePlate',
 				},
 
 				{
@@ -208,11 +213,11 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					paymentMethod: [
+					knifePlate: [
 						{
 							required: true,
 							type: 'string',
-							message: '付款方式不能为空',
+							message: '刀版不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -221,8 +226,8 @@ export default {
 				data: [
 					{
 						type: 'input',
-						label: '付款方式',
-						name: 'paymentMethod',
+						label: '刀版',
+						name: 'knifePlate',
 						value: '',
 						attr: {
 							clearable: true,
@@ -251,7 +256,7 @@ export default {
 				vm.modal1.sendData = row
 				vm.modal1.title = '修改'
 				vm.modal1.values = {
-					paymentMethod: row.id,
+					knifePlate: row.id,
 				}
 			}
 			vm.modal1.isOpen = true
@@ -267,7 +272,7 @@ export default {
 				pageNo: page,
 				pageSize: vm.pageSize,
 			}
-			vm.api.basis.paymentMethods(params).then(
+			vm.api.basis.knifePlates(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
@@ -280,12 +285,12 @@ export default {
 				}
 			)
 		},
-		delPaymentMethod(row) {
+		delKnifePlate(row) {
 			let vm = this
 			let params = {
 				id: row.id,
 			}
-			vm.api.basis.delPaymentMethod(params).then(
+			vm.api.basis.delKnifePlate(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -306,15 +311,15 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					paymentMethod: values.paymentMethod,
+					knifePlate: values.knifePlate,
 				}
 				let row = vm.modal1.sendData
-				let path = 'createPaymentMethod'
+				let path = 'createKnifePlate'
 				if (vm.modal1.title === '新增') {
-					path = 'createPaymentMethod'
+					path = 'createKnifePlate'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updatePaymentMethod'
+					path = 'updateKnifePlate'
 					params.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -365,7 +370,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delPaymentMethod(row)
+											vm.delKnifePlate(row)
 										},
 									},
 								},
@@ -391,7 +396,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.updatePaymentMethod(row)
+											vm.showModal('modify', row)
 										},
 									},
 								},
