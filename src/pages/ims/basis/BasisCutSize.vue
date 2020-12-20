@@ -264,8 +264,8 @@ export default {
 		getList(page = 1) {
 			let vm = this
 			let params = {
-				pageNo: page,
-				pageSize: vm.pageSize,
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
 			vm.api.basis.cutSizes(params).then(
 				(res) => {
@@ -283,7 +283,8 @@ export default {
 		delCutSize(row) {
 			let vm = this
 			let params = {
-				id: row.id,
+				reqTime: null,
+				bizContent: { id: row.id },
 			}
 			vm.api.basis.delCutSize(params).then(
 				() => {

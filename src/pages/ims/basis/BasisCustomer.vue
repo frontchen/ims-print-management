@@ -196,7 +196,7 @@ export default {
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -269,7 +269,7 @@ export default {
 					paymentMethod: [
 						{
 							required: true,
-							type: 'string',
+							type: 'number',
 							message: '付款方式不能为空',
 							trigger: 'change',
 						},
@@ -284,7 +284,7 @@ export default {
 					accountDays: [
 						{
 							pattern: unit.posInt,
-							type: 'string',
+							type: 'number',
 							message: '账期天数格式不正确',
 							trigger: 'blur',
 						},
@@ -303,6 +303,11 @@ export default {
 							data: [],
 							filterable: true,
 							disabled: false,
+							props: {
+								label: 'groupName',
+								children: 'sonGroups',
+								value: 'id',
+							},
 						},
 					},
 					{
@@ -313,6 +318,18 @@ export default {
 						attr: {
 							clearable: true,
 							placeholder: '请输入公司名称',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '客户编号',
+						name: 'customerNo',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入客户编号',
 							filterable: true,
 							disabled: false,
 						},
@@ -423,7 +440,7 @@ export default {
 		}
 	},
 	mounted() {
-		// this.getTablesData()
+		this.getList()
 	},
 	methods: {
 		//搜索栏查询
@@ -431,39 +448,102 @@ export default {
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
+			if (type === 'add' || type === 'modify') {
+				vm.showAddModifyModal(type, row)
+			}
+		},
+		async showAddModifyModal(type, row) {
+			let vm = this
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
-			if (type === 'modify') {
-				vm.modal1.sendData = row
-				vm.modal1.title = '修改'
-				//客户群组
-				let customerGroupData = vm.modal1.data.find(
-					(v) => v.name === 'customerGroup'
-				)
-				customerGroupData = customerGroupData ? customerGroupData.attr.data : []
-				let customerGroupChecked = unit.getCascaderValue(
-					customerGroupData,
-					row.customerGroup
-				)
-				vm.modal1.values = {
-					//客户分组
-					customerGroup: customerGroupChecked.map((v) => v.value),
-					customerNo: row.customerNo, //客户编号
-					company: row.company, //公司名
-					telephone: row.telephone, //电话
-					contact: row.contact, //联系人
-					remark: row.remark, //备注
-					companyAddress: row.companyAddress, //公司地址
-					receiveAddress: row.receiveAddress, //收货地址
-					paymentMethod: row.paymentId, //付款方式
-					accountDays: row.accountDays, //账期天数
-					email: row.email, //邮箱
-				}
-			}
+			await vm.getCustomerGroup()
+			await vm.getPaymentMethod()
+
 			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
+				if (type === 'modify') {
+					vm.modal1.sendData = row
+					vm.modal1.title = '修改'
+					//客户群组
+					let customerGroupData = vm.modal1.data.find(
+						(v) => v.name === 'customerGroup'
+					)
+					customerGroupData = customerGroupData
+						? customerGroupData.attr.data
+						: []
+					let customerGroupChecked = unit.getCascaderValue(
+						customerGroupData,
+						row.customerGroupId,
+						{
+							children: 'sonGroups',
+							value: 'id',
+						}
+					)
+					console.log(['customerGroupChecked', customerGroupChecked])
+					vm.modal1.values = {
+						//客户分组
+						customerGroup: customerGroupChecked,
+						customerNo: row.customerNo, //客户编号
+						company: row.company, //公司名
+						telephone: row.telephone, //电话
+						contact: row.contact, //联系人
+						remark: row.remark, //备注
+						companyAddress: row.companyAddress, //公司地址
+						receiveAddress: row.receiveAddress, //收货地址
+						paymentMethod: row.paymentId, //付款方式
+						accountDays: row.accountDays, //账期天数
+						email: row.email, //邮箱
+					}
+				}
+			})
+		},
+		//新增弹框 获取群组名称下拉列表
+		async getCustomerGroup(param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: {
+					...param,
+				},
+			}
+			let res = await vm.api.basis.customerGroups(params).catch((err) => {
+				vm.$message.error(err)
+			})
+			if (!res) {
+				return false
+			}
+			let index = vm.modal1.data.findIndex((v) => v.name === 'customerGroup')
+			if (index === -1) return false
+			vm.$nextTick(() => {
+				vm.$set(vm.modal1.data[index].attr, 'data', res.item || [])
+			})
+		},
+		//新增弹框 获取群组名称下拉列表
+		async getPaymentMethod(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			let res = await vm.api.basis.paymentMethods(params).catch((err) => {
+				vm.$message.error(err)
+			})
+			if (!res) {
+				return false
+			}
+			let index = vm.modal1.data.findIndex((v) => v.name === 'paymentMethod')
+			if (index === -1) return false
+
+			let list = res.item || []
+			list = list.map((v) => {
+				v.label = v.paymentMethod
+				v.value = v.id
+				return v
+			})
+			vm.$nextTick(() => {
+				vm.$set(vm.modal1.data[index].attr, 'options', list)
 			})
 		},
 		// 搜索栏select cascader切换事件
@@ -471,8 +551,8 @@ export default {
 		getList(page = 1) {
 			let vm = this
 			let params = {
-				pageNo: page,
-				pageSize: vm.pageSize,
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
 			vm.api.basis.customers(params).then(
 				(res) => {
@@ -490,7 +570,8 @@ export default {
 		delCustomer(row) {
 			let vm = this
 			let params = {
-				id: row.id,
+				reqTime: null,
+				bizContent: { id: row.id },
 			}
 			vm.api.basis.delCustomer(params).then(
 				() => {
@@ -519,7 +600,11 @@ export default {
 				customerGroupData = customerGroupData ? customerGroupData.attr.data : []
 				let customerGroupItem = unit.getCascaderData(
 					values.customerGroup,
-					customerGroupData
+					customerGroupData,
+					{
+						children: 'sonGroups',
+						value: 'id',
+					}
 				)
 				customerGroupItem = customerGroupItem.length
 					? customerGroupItem[customerGroupItem.length - 1]
@@ -534,19 +619,22 @@ export default {
 				let paymentMethodItem =
 					paymentMethodData.find((v) => v.value === values.paymentMethod) || {}
 				let params = {
-					customerGroupId: customerGroupItem.value, //客户分组
-					customerGroup: customerGroupItem.label,
-					customerNo: values.customerNo, //客户编号
-					company: values.company, //公司名
-					telephone: values.telephone, //电话
-					contact: values.contact, //联系人
-					remark: values.remark, //备注
-					companyAddress: values.companyAddress, //公司地址
-					receiveAddress: values.receiveAddress, //收货地址
-					paymentId: paymentMethodItem.value, //付款方式
-					paymentMethod: paymentMethodItem.label,
-					accountDays: values.accountDays, //账期天数
-					email: values.email, //邮箱
+					reqtime: unit.formatDate(new Date()),
+					bizContent: {
+						customerGroupId: customerGroupItem.id, //客户分组
+						customerGroup: customerGroupItem.groupName,
+						customerNo: values.customerNo, //客户编号
+						company: values.company, //公司名
+						telephone: values.telephone, //电话
+						contact: values.contact, //联系人
+						remark: values.remark, //备注
+						companyAddress: values.companyAddress, //公司地址
+						receiveAddress: values.receiveAddress, //收货地址
+						paymentId: paymentMethodItem.value, //付款方式
+						paymentMethod: paymentMethodItem.label,
+						accountDays: values.accountDays, //账期天数
+						email: values.email, //邮箱
+					},
 				}
 				let row = vm.modal1.sendData
 				let path = 'createCustomer'
@@ -555,7 +643,7 @@ export default {
 				}
 				if (vm.modal1.title === '修改') {
 					path = 'updateCustomer'
-					params.id = row.id
+					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
 					() => {

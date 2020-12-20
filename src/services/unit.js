@@ -79,20 +79,25 @@ const unit = {
     return val
   },
   // 级联数据，select多选 label in value
-  getCheckListData: (checkList, dataList, type) => {
+  getCheckListData: (
+    checkList,
+    dataList,
+    type,
+    options = { value: 'value', children: 'children' }
+  ) => {
     // 递归级联数据
     let values = []
 
     function getList(clist, dlist) {
       for (let i = 0; i < clist.length; i++) {
         let index = dlist.findIndex(val => {
-          return val.value === clist[i]
+          return val[options.value] === clist[i]
         })
         if (index >= 0) {
           values.push(dlist[index])
           clist.splice(i, 1)
           if (type === 'cascader') {
-            dlist = dlist[index].children
+            dlist = dlist[index][options.children]
           }
           if (dlist && dlist.length > 0) {
             getList(clist, dlist)
@@ -105,19 +110,31 @@ const unit = {
     return values
   },
   // 级联数据 label in value
-  getCascaderData: (checkList, dataList) => {
+  getCascaderData: (
+    checkList,
+    dataList,
+    options = { value: 'value', children: 'children' }
+  ) => {
     let clist = unit.cloneDeep(checkList)
     let dlist = unit.cloneDeep(dataList)
-    return unit.getCheckListData(clist, dlist, 'cascader')
+    return unit.getCheckListData(clist, dlist, 'cascader', options)
   },
   // select多选 label in value
-  getSelectData: (checkList, dataList) => {
+  getSelectData: (
+    checkList,
+    dataList,
+    options = { value: 'value', children: 'children' }
+  ) => {
     let clist = unit.cloneDeep(checkList)
     let dlist = unit.cloneDeep(dataList)
-    return unit.getCheckListData(clist, dlist, 'select')
+    return unit.getCheckListData(clist, dlist, 'select', options)
   },
   // 根据选中的最后一项，获取选中的值
-  getCascaderValue: (list, value) => {
+  getCascaderValue: (
+    list,
+    value,
+    options = { value: 'value', children: 'children' }
+  ) => {
     let clist = unit.cloneDeep(list)
     let find = false
     let checked = []
@@ -127,14 +144,14 @@ const unit = {
           return false
         }
         let v = list[i]
-        checked[depth] = v.value
-        if (v.value === value) {
+        checked[depth] = v[options.value]
+        if (v[options.value] === value) {
           find = true
           checked = checked.slice(0, depth + 1)
           return false
         }
-        if (v.children && v.children.length) {
-          getList(v.children, depth + 1)
+        if (v[options.children] && v[options.children].length) {
+          getList(v[options.children], depth + 1)
         }
       }
     }

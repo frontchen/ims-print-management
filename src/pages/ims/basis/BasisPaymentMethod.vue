@@ -184,7 +184,7 @@ export default {
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -244,19 +244,21 @@ export default {
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
-			if (type === 'add') {
-				vm.modal1.title = '新增'
-			}
-			if (type === 'modify') {
-				vm.modal1.sendData = row
-				vm.modal1.title = '修改'
-				vm.modal1.values = {
-					paymentMethod: row.id,
-				}
-			}
+
 			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
+				if (type === 'add') {
+					vm.modal1.title = '新增'
+				}
+
 				vm.$refs.modal1.resetFields()
+				if (type === 'modify') {
+					vm.modal1.sendData = row
+					vm.modal1.title = '修改'
+					vm.modal1.values = {
+						paymentMethod: row.paymentMethod,
+					}
+				}
 			})
 		},
 		// 搜索栏select cascader切换事件
@@ -264,8 +266,8 @@ export default {
 		getList(page = 1) {
 			let vm = this
 			let params = {
-				pageNo: page,
-				pageSize: vm.pageSize,
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
 			vm.api.basis.paymentMethods(params).then(
 				(res) => {
@@ -283,7 +285,8 @@ export default {
 		delPaymentMethod(row) {
 			let vm = this
 			let params = {
-				id: row.id,
+				reqTime: null,
+				bizContent: { id: row.id },
 			}
 			vm.api.basis.delPaymentMethod(params).then(
 				() => {
@@ -306,7 +309,10 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					paymentMethod: values.paymentMethod,
+					reqtime: unit.formatDate(new Date()),
+					bizContent: {
+						paymentMethod: values.paymentMethod,
+					},
 				}
 				let row = vm.modal1.sendData
 				let path = 'createPaymentMethod'
@@ -315,12 +321,12 @@ export default {
 				}
 				if (vm.modal1.title === '修改') {
 					path = 'updatePaymentMethod'
-					params.id = row.id
+					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
-					() => {
+					(res) => {
 						vm.getList()
-						vm.$message.success('操作成功!')
+						vm.$message.success(res.msg || '操作成功!')
 						vm.modal1.isOpen = false
 					},
 					(err) => {
@@ -365,7 +371,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delPaymentMethod(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delPaymentMethod(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},
@@ -391,7 +410,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.updatePaymentMethod(row)
+											vm.showModal('modify', row)
 										},
 									},
 								},

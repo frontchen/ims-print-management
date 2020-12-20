@@ -269,8 +269,8 @@ export default {
 		getList(page = 1) {
 			let vm = this
 			let params = {
-				pageNo: page,
-				pageSize: vm.pageSize,
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
 			vm.api.basis.knifePlates(params).then(
 				(res) => {
@@ -288,7 +288,8 @@ export default {
 		delKnifePlate(row) {
 			let vm = this
 			let params = {
-				id: row.id,
+				reqTime: null,
+				bizContent: { id: row.id },
 			}
 			vm.api.basis.delKnifePlate(params).then(
 				() => {

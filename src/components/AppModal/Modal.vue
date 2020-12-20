@@ -442,8 +442,10 @@ export default {
 
 	methods: {
 		modalVisibleChange() {
-			this.isOpen = true
-			this.$emit('input', this.isOpen)
+			this.$nextTick(() => {
+				this.isOpen = true
+				this.$emit('input', this.isOpen)
+			})
 		},
 		// 获取所需数据的键值
 		getLabelVaule(item) {
@@ -512,12 +514,16 @@ export default {
 			// this.isOpen = false
 		},
 		modalCancel() {
-			this.isOpen = false
-			this.$emit('input', this.isOpen)
+			this.$nextTick(() => {
+				this.isOpen = false
+				this.$emit('input', this.isOpen)
+			})
 		},
 		close() {
-			this.isOpen = false
-			this.$emit('input', this.isOpen)
+			this.$nextTick(() => {
+				this.isOpen = false
+				this.$emit('input', this.isOpen)
+			})
 		},
 		getLabelValue(index, subIndex, value) {
 			let vm = this

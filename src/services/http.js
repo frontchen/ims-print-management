@@ -57,7 +57,7 @@ const http = {
     return new Promise((resolve, reject) => {
       if (res.status === 200) {
         let data = res.data.data || res.data
-        if (res.data.code * 1 !== -1) {
+        if (res.data.code * 1 === 200) {
           return resolve(data)
         }
         return reject(res.data.msg || networkErr)

@@ -15,9 +15,10 @@
 					<div class="group-list">
 						<el-tree
 							:data="treeData"
+							:props="defaultProps"
 							node-key="id"
 							empty-text="暂无数据"
-							:expand-on-click-node="false"
+							:expand-on-click-node="true"
 							:render-content="renderContent"
 						>
 						</el-tree>
@@ -99,6 +100,10 @@ export default {
 					path: '',
 				},
 			],
+			defaultProps: {
+				children: 'sonGroups',
+				label: 'groupName',
+			},
 			treeData: [],
 			// 新增
 			modal1: {
@@ -199,13 +204,18 @@ export default {
 			}
 			vm.api.basis.customerGroups(params).then(
 				(res) => {
-					console.log(['getList', res])
+					if (!res) {
+						return false
+					}
+					vm.treeData = res.item || []
+					if (vm.treeData.length) {
+						vm.$refs.search.disableSearchRight(['add'])
+					}
 				},
 				(err) => {
 					vm.$message.error(err)
 				}
 			)
-			// vm.$refs.search.disableSearchRight(['add'])
 		},
 		treeEditClick(name, data) {
 			let vm = this
@@ -238,7 +248,14 @@ export default {
 			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
 				console.log(vm.$refs.modal1)
+				vm.modal1.title = vm.addType
 				vm.$refs.modal1.resetFields()
+				if (vm.addType === '修改') {
+					vm.modal1.values = {
+						groupName: vm.rowItem.groupName,
+						groupNo: vm.rowItem.groupNo,
+					}
+				}
 			})
 		},
 		//新增、修改
@@ -263,7 +280,7 @@ export default {
 						params.bizContent.parentId = vm.rowItem.id
 					}
 					if (vm.addType === '增加同级') {
-						//...
+						params.bizContent.parentId = vm.rowItem.parentId
 					}
 					path = 'createCustomerGroup'
 				} else {
@@ -271,14 +288,11 @@ export default {
 					path = 'updateCustomerGroup'
 					params.bizContent.id = vm.rowItem.id
 				}
-				console.log(['path', path, vm.api.basis[path]])
-				console.log(vm.rowItem)
 
 				vm.api.basis[path](params).then(
 					(res) => {
-						console.log(['add', res])
 						vm.getList()
-						vm.$message.success('操作成功!')
+						vm.$message.success(res.msg || '操作成功!')
 						vm.modal1.isOpen = false
 					},
 					(err) => {
@@ -292,8 +306,12 @@ export default {
 		delCustomerGroup(item) {
 			let vm = this
 			let params = {
-				id: item.id,
+				reqtime: null,
+				bizContent: {
+					id: item.id,
+				},
 			}
+
 			vm.api.basis.delCustomerGroup(params).then(
 				() => {
 					vm.getList()
@@ -310,17 +328,21 @@ export default {
 		renderContent(h, { node, data }) {
 			let vm = this
 			let icon = node.expanded ? 'el-icon-folder-opened' : 'el-icon-folder'
+			let disabled = false
+			if (Array.isArray(data.sonGroups) && data.sonGroups.length) {
+				disabled = true
+			}
 			let dropData = [
 				{ label: '增加同级', value: '增加同级' },
 				{ label: '增加下级', value: '增加下级' },
 				{ label: '修改', value: '修改' },
-				{ label: '删除', value: '删除' },
+				{ label: '删除', value: '删除', disabled },
 			]
 			if (data.level === 1) {
 				dropData = [
 					{ label: '增加下级', value: '增加下级' },
 					{ label: '修改', value: '修改' },
-					{ label: '删除', value: '删除' },
+					{ label: '删除', value: '删除', disabled },
 				]
 			}
 			return h(
@@ -345,7 +367,7 @@ export default {
 							class: `${icon}`,
 						},
 					}),
-					h('span', data.groupName),
+					h('span', data.groupName || ''),
 					h(AppDropMenu, {
 						attrs: {
 							class:

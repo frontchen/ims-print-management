@@ -9,6 +9,7 @@
 				v-for="(item, index) in data"
 				:key="index"
 				:command="item.value"
+				:disabled="item.disabled"
 				>{{ item.label }}</el-dropdown-item
 			>
 		</el-dropdown-menu>

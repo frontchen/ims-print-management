@@ -284,8 +284,8 @@ export default {
 		getList(page = 1) {
 			let vm = this
 			let params = {
-				pageNo: page,
-				pageSize: vm.pageSize,
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
 			vm.api.basis.departments(params).then(
 				(res) => {
@@ -303,7 +303,8 @@ export default {
 		delDepartment(row) {
 			let vm = this
 			let params = {
-				id: row.id,
+				reqTime: null,
+				bizContent: { id: row.id },
 			}
 			vm.api.basis.delDepartment(params).then(
 				() => {
