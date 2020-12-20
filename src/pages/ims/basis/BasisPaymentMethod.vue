@@ -164,7 +164,7 @@ export default {
 			headers: [
 				{
 					text: '时间',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					width: 100,
 					value: 'id',
@@ -175,9 +175,10 @@ export default {
 						return h('span', unit.formatDate(params.row.createTime))
 					},
 				},
-				{ text: '创建人', value: 'creator' },
+
 				{
 					text: '付款方式',
+					align: 'center',
 					value: 'paymentMethod',
 				},
 
@@ -236,11 +237,22 @@ export default {
 		}
 	},
 	mounted() {
+		this.getPaymentMethodList()
 		this.getList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.paymentMethodId = val.paymentMethod
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
@@ -262,12 +274,39 @@ export default {
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'paymentMethod') {
+				this.searchData.paymentMethod = ''
+				this.searchData.paymentMethodId = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'paymentMethod') {
+				this.searchData.paymentMethod = item.value
+				this.getPaymentMethodList(1, {
+					paymentMethod: item.value,
+				})
+			}
+		},
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
+			}
+			if (vm.searchData.paymentMethodId) {
+				params.bizContent.id = vm.searchData.paymentMethodId
+			}
+			if (vm.searchData.paymentMethod) {
+				params.bizContent.paymentMethod = vm.searchData.paymentMethod
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.api.basis.paymentMethods(params).then(
 				(res) => {
@@ -276,6 +315,31 @@ export default {
 					vm.items = list
 					vm.total = res.total || 1
 					vm.pageIndex = res.pageNo
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		//搜索栏-付款方式下拉列表
+		getPaymentMethodList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.paymentMethods(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex((v) => v.name === 'paymentMethod')
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.paymentMethod
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
 				},
 				(err) => {
 					vm.$message.error(err)

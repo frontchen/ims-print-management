@@ -174,13 +174,14 @@ export default {
 			headers: [
 				{
 					text: '订单号',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					value: 'id',
 				},
-				{ text: '客户名称', value: 'status' },
+				{ text: '客户名称', align: 'center', value: 'status' },
 				{
 					text: '印件名称',
+					align: 'center',
 					value: 'time',
 					render: (h, params) => {
 						return this.renderDate(h, params)
@@ -190,15 +191,17 @@ export default {
 				{
 					text: '订单数量',
 					value: 'recipientInfo',
+					align: 'center',
 					render: (h, params) => {
 						return this.renderRecipientInfo(h, params)
 					},
 				},
 
-				{ text: '出货数量', value: 'receiver_address' },
+				{ text: '出货数量', align: 'center', value: 'receiver_address' },
 				{
 					text: '交货日期',
 					value: 'deliveryTime',
+					align: 'center',
 					render: (h, params) => {
 						return this.renderDeliveryTime(h, params)
 					},
@@ -206,6 +209,7 @@ export default {
 				{
 					text: '金额',
 					value: 'orderFee',
+					align: 'center',
 					render: (h, params) => {
 						return this.renderPrice(h, params)
 					},
@@ -213,6 +217,7 @@ export default {
 				{
 					text: '下单人',
 					value: 'orderFee',
+					align: 'center',
 					render: (h, params) => {
 						return this.renderPrice(h, params)
 					},
@@ -220,7 +225,7 @@ export default {
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},

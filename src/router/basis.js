@@ -1,12 +1,13 @@
 //基础功能
 const BasisList = () => import('Ims/basis/BasisList') // 工艺列表
-const BasisGroup = () => import('Ims/basis/BasisGroup') // 群组名称
+const BasisCustomerGroup = () => import('Ims/basis/BasisCustomerGroup') // 客户群组名称
 const BasisCustomer = () => import('Ims/basis/BasisCustomer') // 客户列表
 const BasisPaymentMethod = () => import('Ims/basis/BasisPaymentMethod') // 付款方式
 const BasisCutSize = () => import('Ims/basis/BasisCutSize') // 开料尺寸
 const BasisDepartment = () => import('Ims/basis/BasisDepartment') // 部门列表
 const BasisKnifePlate = () => import('Ims/basis/BasisKnifePlate') // 刀版
 const BasisMaterial = () => import('Ims/basis/BasisMaterial') // 物料
+const BasisMaterialGroup = () => import('Ims/basis/BasisMaterialGroup') // 物料群组
 const basis = [
   {
     path: '/basis/list',
@@ -15,10 +16,10 @@ const basis = [
     component: BasisList
   },
   {
-    path: '/basis/group',
-    name: 'basis-group',
+    path: '/basis/customerGroup',
+    name: 'basis-customerGroup',
     title: '客户群组',
-    component: BasisGroup
+    component: BasisCustomerGroup
   },
   {
     path: '/basis/customer',
@@ -55,6 +56,12 @@ const basis = [
     name: 'basis-material',
     title: '物料',
     component: BasisMaterial
+  },
+  {
+    path: '/basis/materialGroup',
+    name: 'basis-materialGroup',
+    title: '物料群组',
+    component: BasisMaterialGroup
   }
 ]
 

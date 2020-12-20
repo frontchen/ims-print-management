@@ -107,6 +107,13 @@ export default {
 						clearable: true,
 						options: [],
 						size: 'mini',
+						remote: true,
+						remoteMethod: (query) => {
+							this.searchBarQuery({
+								name: 'departmentName',
+								value: query,
+							})
+						},
 					},
 				},
 				{
@@ -163,28 +170,23 @@ export default {
 			],
 			headers: [
 				{
-					text: '时间',
-					align: 'left',
+					text: '编号',
+					align: 'center',
 					sortable: false,
 					width: 100,
-					value: 'id',
-					render: (h, params) => {
-						if (unit.isEmptyObject(params.row)) {
-							return false
-						}
-						return h('span', unit.formatDate(params.row.creteTime))
-					},
+					value: 'departmentNo',
 				},
-				{ text: '创建人', value: 'creator' },
+
 				{
 					text: '部门',
+					align: 'center',
 					value: 'departmentName',
 				},
 
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -256,11 +258,22 @@ export default {
 		}
 	},
 	mounted() {
+		this.getDepartmentList()
 		this.getList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.departmentId = val.departmentName
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
@@ -280,12 +293,39 @@ export default {
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'departmentName') {
+				this.searchData.departmentName = ''
+				this.searchData.departmentId = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'departmentName') {
+				this.searchData.departmentName = item.value
+				this.getDepartmentList(1, {
+					departmentName: item.value,
+				})
+			}
+		},
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
+			}
+			if (vm.searchData.departmentId) {
+				params.bizContent.id = vm.searchData.departmentId
+			}
+			if (vm.searchData.departmentName) {
+				params.bizContent.departmentName = vm.searchData.departmentName
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.api.basis.departments(params).then(
 				(res) => {
@@ -294,6 +334,33 @@ export default {
 					vm.items = list
 					vm.total = res.total || 1
 					vm.pageIndex = res.pageNo
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		//搜索栏-公司名称下拉列表
+		getDepartmentList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.departments(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex(
+						(v) => v.name === 'departmentName'
+					)
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.departmentName
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
 				},
 				(err) => {
 					vm.$message.error(err)
@@ -309,6 +376,7 @@ export default {
 			vm.api.basis.delDepartment(params).then(
 				() => {
 					vm.getList()
+					vm.getDepartmentList()
 					vm.$message.success('删除成功!')
 				},
 				(err) => {
@@ -327,22 +395,26 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					departmentName: values.departmentName,
-					departmentNo: values.departmentNo,
+					reqtime: unit.formatDate(new Date()),
+					bizContent: {
+						departmentName: values.departmentName,
+						departmentNo: values.departmentNo,
+					},
 				}
 				let row = vm.modal1.sendData
-				let path = 'createPaymentMethod'
+				let path = 'createDepartment'
 				if (vm.modal1.title === '新增') {
-					path = 'createPaymentMethod'
+					path = 'createDepartment'
 				}
 				if (vm.modal1.title === '修改') {
 					path = 'updateDepartment'
 					params.id = row.id
 				}
 				vm.api.basis[path](params).then(
-					() => {
+					(res) => {
 						vm.getList()
-						vm.$message.success('操作成功!')
+						vm.getDepartmentList()
+						vm.$message.success(res.msg || '操作成功!')
 						vm.modal1.isOpen = false
 					},
 					(err) => {
@@ -387,7 +459,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delDepartment(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delDepartment(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},

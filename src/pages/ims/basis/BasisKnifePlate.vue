@@ -112,6 +112,13 @@ export default {
 						clearable: true,
 						options: [],
 						size: 'mini',
+						remote: true,
+						remoteMethod: (query) => {
+							this.searchBarQuery({
+								name: 'knifePlate',
+								value: query,
+							})
+						},
 					},
 				},
 				{
@@ -169,7 +176,7 @@ export default {
 			headers: [
 				{
 					text: '时间',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					width: 100,
 					value: 'id',
@@ -177,19 +184,20 @@ export default {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						return h('span', unit.formatDate(params.row.create))
+						return h('span', unit.formatDate(params.row.createTime))
 					},
 				},
-				{ text: '创建人', value: 'creator' },
+
 				{
 					text: '刀版',
 					value: 'knifePlate',
+					align: 'center',
 				},
 
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -241,36 +249,75 @@ export default {
 		}
 	},
 	mounted() {
+		this.getKnifePlateList()
 		this.getList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.knifePlateId = val.company
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
-			if (type === 'modify') {
-				vm.modal1.sendData = row
-				vm.modal1.title = '修改'
-				vm.modal1.values = {
-					knifePlate: row.id,
-				}
-			}
+
 			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
+				if (type === 'modify') {
+					vm.modal1.sendData = row
+					vm.modal1.title = '修改'
+					vm.modal1.values = {
+						knifePlate: row.knifePlate,
+					}
+				}
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'company') {
+				this.searchData.knifePlate = ''
+				this.searchData.knifePlateId = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'company') {
+				this.searchData.knifePlate = item.value
+				this.getKnifePlateList(1, {
+					knifePlate: item.value,
+				})
+			}
+		},
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
+			}
+			if (vm.searchData.knifePlateId) {
+				params.bizContent.id = vm.searchData.knifePlateId
+			}
+			if (vm.searchData.knifePlate) {
+				params.bizContent.knifePlate = vm.searchData.knifePlate
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.api.basis.knifePlates(params).then(
 				(res) => {
@@ -279,6 +326,31 @@ export default {
 					vm.items = list
 					vm.total = res.total || 1
 					vm.pageIndex = res.pageNo
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		//搜索栏-刀版下拉列表
+		getKnifePlateList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.knifePlates(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex((v) => v.name === 'knifePlate')
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.knifePlate
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
 				},
 				(err) => {
 					vm.$message.error(err)
@@ -312,7 +384,8 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					knifePlate: values.knifePlate,
+					reqtime: unit.formatDate(new Date()),
+					bizContent: { knifePlate: values.knifePlate },
 				}
 				let row = vm.modal1.sendData
 				let path = 'createKnifePlate'
@@ -321,7 +394,7 @@ export default {
 				}
 				if (vm.modal1.title === '修改') {
 					path = 'updateKnifePlate'
-					params.id = row.id
+					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
 					() => {
@@ -371,7 +444,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delKnifePlate(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delKnifePlate(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},

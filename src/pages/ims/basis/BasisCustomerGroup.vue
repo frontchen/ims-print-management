@@ -18,6 +18,7 @@
 							:props="defaultProps"
 							node-key="id"
 							empty-text="暂无数据"
+							default-expand-all
 							:expand-on-click-node="true"
 							:render-content="renderContent"
 						>
@@ -193,6 +194,7 @@ export default {
 		}
 	},
 	mounted() {
+		this.$refs.search.disableSearchRight(['add'])
 		this.getList()
 	},
 	methods: {
@@ -204,12 +206,11 @@ export default {
 			}
 			vm.api.basis.customerGroups(params).then(
 				(res) => {
-					if (!res) {
-						return false
-					}
 					vm.treeData = res.item || []
 					if (vm.treeData.length) {
 						vm.$refs.search.disableSearchRight(['add'])
+					} else {
+						vm.$refs.search.disableSearchRight([])
 					}
 				},
 				(err) => {

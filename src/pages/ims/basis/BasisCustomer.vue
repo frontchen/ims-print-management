@@ -99,6 +99,13 @@ export default {
 						clearable: true,
 						options: [],
 						size: 'mini',
+						remote: true,
+						remoteMethod: (query) => {
+							this.searchBarQuery({
+								name: 'company',
+								value: query,
+							})
+						},
 					},
 				},
 				{
@@ -156,7 +163,7 @@ export default {
 			headers: [
 				{
 					text: '客户编号',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					value: 'customerNo',
 				},
@@ -441,10 +448,21 @@ export default {
 	},
 	mounted() {
 		this.getList()
+		this.getCompanyList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.companyId = val.company
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
@@ -547,12 +565,40 @@ export default {
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'company') {
+				this.searchData.companyName = ''
+				this.searchData.companyId = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'company') {
+				this.searchData.companyName = item.value
+				this.getCompanyList(1, {
+					company: item.value,
+				})
+			}
+		},
+		//列表查询
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
+			}
+			if (vm.searchData.companyId) {
+				params.bizContent.id = vm.searchData.companyId
+			}
+			if (vm.searchData.companyName) {
+				params.bizContent.company = vm.searchData.companyName
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.api.basis.customers(params).then(
 				(res) => {
@@ -561,6 +607,31 @@ export default {
 					vm.items = list
 					vm.total = res.total || 1
 					vm.pageIndex = res.pageNo
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		//搜索栏-公司名称下拉列表
+		getCompanyList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.customers(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex((v) => v.name === 'company')
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.company
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
 				},
 				(err) => {
 					vm.$message.error(err)
@@ -693,7 +764,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delCustomer(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delCustomer(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},

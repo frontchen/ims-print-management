@@ -119,7 +119,7 @@ Vue.use(GlobalComponents)
 //     key: 'AIzaSyBtdO5k6CRntAMJCF-H5uZjTCoSGX95cdk' // Add your here your google map api key
 //   }
 // })
-
+Vue.config.silent = true
 new Vue({
   vuetify,
   router,

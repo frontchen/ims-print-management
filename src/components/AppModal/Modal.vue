@@ -350,8 +350,10 @@ export default {
 	computed: {
 		modalCls() {
 			let mcls = 'ims-modal'
-			if (this.className) {
-				mcls += ` ${this.className}`
+			if (this.isOpen) {
+				if (this.className) {
+					mcls += ` ${this.className}`
+				}
 			}
 			return mcls
 		},

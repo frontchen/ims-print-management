@@ -267,7 +267,7 @@ export default {
 			headers: [
 				{
 					text: '编号',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					value: 'id',
 				},
@@ -306,6 +306,7 @@ export default {
 				{
 					text: '采购',
 					value: 'orderFee',
+						align: 'center',
 					render: (h, params) => {
 						return this.renderPrice(h, params)
 					},
@@ -313,7 +314,7 @@ export default {
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},

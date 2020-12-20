@@ -112,6 +112,13 @@ export default {
 						clearable: true,
 						options: [],
 						size: 'mini',
+						remote: true,
+						remoteMethod: (query) => {
+							this.searchBarQuery({
+								name: 'materialName',
+								value: query,
+							})
+						},
 					},
 				},
 				{
@@ -169,7 +176,7 @@ export default {
 			headers: [
 				{
 					text: '时间',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					width: 100,
 					value: 'id',
@@ -177,26 +184,29 @@ export default {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						return h('span', unit.formatDate(params.row.create))
+						return h('span', unit.formatDate(params.row.createTime))
 					},
 				},
-				{ text: '创建人', value: 'creator' },
+
 				{
 					text: '物料编号',
+					align: 'center',
 					value: 'materialNo',
 				},
 				{
 					text: '物料',
+					align: 'center',
 					value: 'materialName',
 				},
 				{
 					text: '物料群组',
+					align: 'center',
 					value: 'materialGroup',
 				},
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -289,11 +299,22 @@ export default {
 		}
 	},
 	mounted() {
+		this.getMaterialNameList()
 		this.getList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.materialId = val.materialName
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
@@ -313,14 +334,41 @@ export default {
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'materialName') {
+				this.searchData.materialName = ''
+				this.searchData.materialId = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'materialName') {
+				this.searchData.materialName = item.value
+				this.getCompanyList(1, {
+					materialName: item.value,
+				})
+			}
+		},
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
-			vm.api.basis.materialNames(params).then(
+			if (vm.searchData.materialId) {
+				params.bizContent.id = vm.searchData.materialId
+			}
+			if (vm.searchData.materialName) {
+				params.bizContent.materialName = vm.searchData.materialName
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
+			}
+			vm.api.basis.materials(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
@@ -333,13 +381,39 @@ export default {
 				}
 			)
 		},
-		delmaterialName(row) {
+
+		//搜索栏-物料名称下拉列表
+		getMaterialNameList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.materials(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex((v) => v.name === 'materialName')
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.materialName
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		delMaterial(row) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { id: row.id },
 			}
-			vm.api.basis.delmaterialName(params).then(
+			vm.api.basis.delMaterial(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -373,18 +447,21 @@ export default {
 					? materialGroupItem[materialGroupItem.length - 1]
 					: {}
 				let params = {
-					materialName: values.materialName,
-					materialNo: values.materialNo,
-					materialGroup: materialGroupItem.label,
-					materialGroupId: materialGroupItem.value,
+					reqtime: unit.formatDate(new Date()),
+					bizContent: {
+						materialName: values.materialName,
+						materialNo: values.materialNo,
+						materialGroup: materialGroupItem.label,
+						materialGroupId: materialGroupItem.value,
+					},
 				}
 				let row = vm.modal1.sendData
-				let path = 'creatematerialName'
+				let path = 'createMaterial'
 				if (vm.modal1.title === '新增') {
-					path = 'creatematerialName'
+					path = 'createMaterial'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updatematerialName'
+					path = 'updateMaterial'
 					params.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -435,7 +512,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delmaterialName(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delMaterial(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},
@@ -461,7 +551,7 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.updatematerialName(row)
+											vm.showModal('modify', row)
 										},
 									},
 								},

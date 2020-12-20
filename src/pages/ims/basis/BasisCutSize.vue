@@ -98,7 +98,7 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'knifePlate',
+					name: 'cutSize',
 					value: '',
 					disabled: true,
 					attr: {
@@ -164,7 +164,7 @@ export default {
 			headers: [
 				{
 					text: '时间',
-					align: 'left',
+					align: 'center',
 					sortable: false,
 					width: 100,
 					value: 'id',
@@ -175,16 +175,17 @@ export default {
 						return h('span', unit.formatDate(params.row.createTime))
 					},
 				},
-				{ text: '创建人', value: 'creator' },
+
 				{
 					text: '开料尺寸',
-					value: 'knifePlate',
+					align: 'center',
+					value: 'cutSize',
 				},
 
 				{
 					text: '操作',
 					align: 'center',
-					width: 100,
+					width: 140,
 					render: (h, params) => {
 						return this.renderBtn(h, params)
 					},
@@ -208,7 +209,7 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					knifePlate: [
+					cutSize: [
 						{
 							required: true,
 							type: 'string',
@@ -222,7 +223,7 @@ export default {
 					{
 						type: 'input',
 						label: '开料尺寸',
-						name: 'knifePlate',
+						name: 'cutSize',
 						value: '',
 						attr: {
 							clearable: true,
@@ -237,10 +238,21 @@ export default {
 	},
 	mounted() {
 		this.getList()
+		this.getCutsizeList()
 	},
 	methods: {
 		//搜索栏查询
-		getSearch() {},
+		getSearch(val) {
+			if (val) {
+				let [startDate, endDate] = val.date
+				startDate = startDate ? unit.formatDate(startDate) : ''
+				endDate = endDate ? unit.formatDate(endDate) : ''
+				this.searchData.startDate = startDate
+				this.searchData.endDate = endDate
+				this.searchData.cutSizeId = val.cutSize
+				this.getList(1)
+			}
+		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
@@ -251,7 +263,7 @@ export default {
 				vm.modal1.sendData = row
 				vm.modal1.title = '修改'
 				vm.modal1.values = {
-					knifePlate: row.knifePlate,
+					cutSize: row.cutSize,
 				}
 			}
 			vm.modal1.isOpen = true
@@ -260,12 +272,39 @@ export default {
 			})
 		},
 		// 搜索栏select cascader切换事件
-		changeSearchList() {},
+		changeSearchList(item) {
+			if (item.name === 'cutSize') {
+				this.searchData.cutSize = ''
+				this.searchData.id = item.value
+				this.getList(1)
+			}
+		},
+		// 搜索栏select cascader模糊搜索
+		searchBarQuery(item) {
+			if (item.name === 'cutSize') {
+				this.searchData.cutSize = item.value
+				this.getCutsizeList(1, {
+					cutSize: item.value,
+				})
+			}
+		},
 		getList(page = 1) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
+			}
+			if (vm.searchData.cutSizeId) {
+				params.bizContent.id = vm.searchData.cutSizeId
+			}
+			if (vm.searchData.cutSize) {
+				params.bizContent.cutSize = vm.searchData.cutSize
+			}
+			if (vm.searchData.startDate) {
+				params.bizContent.startDate = vm.searchData.startDate
+			}
+			if (vm.searchData.endDate) {
+				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.api.basis.cutSizes(params).then(
 				(res) => {
@@ -274,6 +313,31 @@ export default {
 					vm.items = list
 					vm.total = res.total || 1
 					vm.pageIndex = res.pageNo
+				},
+				(err) => {
+					vm.$message.error(err)
+				}
+			)
+		},
+		//搜索栏-开料尺寸下拉列表
+		getCutsizeList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			vm.api.basis.cutSizes(params).then(
+				(res) => {
+					if (!res) return false
+					let list = res.item || []
+					let index = vm.searchList.findIndex((v) => v.name === 'cutSize')
+					if (index === -1) return
+					list = list.map((v) => {
+						v.label = v.cutSize
+						v.value = v.id
+						return v
+					})
+					vm.$set(vm.searchList[index].attr, 'options', list)
 				},
 				(err) => {
 					vm.$message.error(err)
@@ -307,7 +371,8 @@ export default {
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
-					knifePlate: values.knifePlate,
+					reqtime: unit.formatDate(new Date()),
+					bizContent: { cutSize: values.cutSize },
 				}
 				let row = vm.modal1.sendData
 				let path = 'createCutSize'
@@ -316,7 +381,7 @@ export default {
 				}
 				if (vm.modal1.title === '修改') {
 					path = 'updateCutSize'
-					params.id = row.id
+					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
 					() => {
@@ -366,7 +431,20 @@ export default {
 									},
 									on: {
 										click: () => {
-											vm.delCutSize(row)
+											vm.$confirm('是否删除该项?', '提示', {
+												confirmButtonText: '确定',
+												cancelButtonText: '取消',
+												type: 'warning',
+											})
+												.then(() => {
+													vm.delCutSize(row)
+												})
+												.catch(() => {
+													vm.$message({
+														type: 'info',
+														message: '已取消删除',
+													})
+												})
 										},
 									},
 								},

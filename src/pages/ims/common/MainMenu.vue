@@ -140,7 +140,7 @@ export default {
 							},
 							{
 								title: '客户群组',
-								path: '/basis/group',
+								path: '/basis/customerGroup',
 								label: 'Old',
 							},
 							{
@@ -171,6 +171,11 @@ export default {
 							{
 								title: '物料',
 								path: '/basis/material',
+								label: 'Old',
+							},
+							{
+								title: '物料群组',
+								path: '/basis/materialGroup',
 								label: 'Old',
 							},
 						],
