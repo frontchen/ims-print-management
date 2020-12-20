@@ -13,41 +13,63 @@
 						:values="searchValues"
 					>
 					</app-search-bar>
-
-					<el-table :data="items" style="width: 100%" height="400">
-						<el-table-column
-							v-for="(item, index) in headers"
-							:width="item.width"
-							:key="index"
-							:align="item.align"
-							show-overflow-tooltip
-							:label="item.text"
-							:prop="item.value"
-						>
-							<template slot-scope="scope">
-								<Expand
-									v-if="item.render"
-									:row="scope.row || {}"
-									:index="scope.index"
-									:render="item.render"
-								></Expand>
-								<span v-else>{{ scope.row[item.value] }}</span>
-							</template>
-						</el-table-column>
-					</el-table>
-					<el-row type="flex">
-						<el-col :span="13"></el-col>
-						<el-col :span="11">
-							<el-pagination
-								@size-change="handleSizeChange"
-								@current-change="handleCurrentChange"
-								:current-page="pageIndex"
-								:page-size="pageSize"
-								layout="total, prev, pager, next, jumper"
-								:total="total"
-							></el-pagination>
-						</el-col>
-					</el-row>
+					<div class="white-space"></div>
+					<div class="basis-container">
+						<div class="left">
+							<el-tree
+								:data="treeData"
+								:props="defaultProps"
+								default-expand-all
+								node-key="id"
+								@node-click="nodeClickItem"
+								empty-text="暂无数据"
+								:expand-on-click-node="true"
+								:render-content="renderContent"
+							>
+							</el-tree>
+						</div>
+						<div class="right">
+							<el-table
+								v-loading="loading"
+								:data="items"
+								style="width: 100%"
+								height="400"
+							>
+								<el-table-column
+									v-for="(item, index) in headers"
+									:width="item.width"
+									:key="index"
+									:align="item.align"
+									show-overflow-tooltip
+									:label="item.text"
+									:prop="item.value"
+								>
+									<template slot-scope="scope">
+										<Expand
+											v-if="item.render"
+											:row="scope.row || {}"
+											:index="scope.index"
+											:render="item.render"
+										></Expand>
+										<span v-else>{{ scope.row[item.value] }}</span>
+									</template>
+								</el-table-column>
+							</el-table>
+							<el-row type="flex">
+								<el-col :span="13"></el-col>
+								<el-col :span="11">
+									<el-pagination
+										@size-change="handleSizeChange"
+										@current-change="handleCurrentChange"
+										:current-page="pageIndex"
+										:page-size="pageSize"
+										layout="total, prev, pager, next, jumper"
+										:total="total"
+									></el-pagination>
+								</el-col>
+							</el-row>
+						</div>
+					</div>
 				</app-card>
 				<!-- 新增 -->
 				<app-modal
@@ -85,6 +107,7 @@ export default {
 
 	data() {
 		return {
+			loading: false,
 			searchValues: {},
 			searchData: {},
 			searchList: [
@@ -210,7 +233,11 @@ export default {
 				},
 			],
 			items: [],
-
+			defaultProps: {
+				children: 'sonGroups',
+				label: 'groupName',
+			},
+			treeData: [],
 			pageIndex: 1,
 			pageSize: 10,
 			total: 1,
@@ -448,6 +475,7 @@ export default {
 	},
 	mounted() {
 		this.getList()
+		this.getCustomerGroupList()
 		this.getCompanyList()
 	},
 	methods: {
@@ -475,10 +503,10 @@ export default {
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
+			vm.modal1.isOpen = true
 			await vm.getCustomerGroup()
 			await vm.getPaymentMethod()
 
-			vm.modal1.isOpen = true
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
 				if (type === 'modify') {
@@ -499,7 +527,6 @@ export default {
 							value: 'id',
 						}
 					)
-					console.log(['customerGroupChecked', customerGroupChecked])
 					vm.modal1.values = {
 						//客户分组
 						customerGroup: customerGroupChecked,
@@ -581,12 +608,18 @@ export default {
 				})
 			}
 		},
+		//点击tree节点 每一级触发
+		nodeClickItem(data) {
+			this.getList(1, {
+				customerGroupId: data.id,
+			})
+		},
 		//列表查询
-		getList(page = 1) {
+		getList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize },
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
 			if (vm.searchData.companyId) {
 				params.bizContent.id = vm.searchData.companyId
@@ -600,8 +633,10 @@ export default {
 			if (vm.searchData.endDate) {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
+			vm.loading = true
 			vm.api.basis.customers(params).then(
 				(res) => {
+					vm.loading = false
 					if (!res) return false
 					let list = res.item || []
 					vm.items = list
@@ -609,6 +644,7 @@ export default {
 					vm.pageIndex = res.pageNo
 				},
 				(err) => {
+					vm.loading = false
 					vm.$message.error(err)
 				}
 			)
@@ -637,6 +673,24 @@ export default {
 					vm.$message.error(err)
 				}
 			)
+		},
+		async getCustomerGroupList(param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: {
+					...param,
+				},
+			}
+			let res = await vm.api.basis.customerGroups(params).catch((err) => {
+				vm.$message.error(err)
+			})
+			if (!res) {
+				return false
+			}
+			vm.$nextTick(() => {
+				vm.treeData = res.item || []
+			})
 		},
 		delCustomer(row) {
 			let vm = this
@@ -817,3 +871,6 @@ export default {
 	},
 }
 </script>
+<style lang="less" scoped>
+@import './css/container.less';
+</style>

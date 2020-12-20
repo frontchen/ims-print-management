@@ -1,0 +1,22 @@
+@import '../../../../components/styles/colors.less';
+.basis-container {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	.left {
+		width: 240px;
+		overflow: auto;
+
+		border-right: 1px dashed @ims-hover-bdcolor;
+	}
+	/deep/ .right {
+		flex: 1;
+		margin-left: 10px;
+		overflow-y: auto;
+		.basis-container-table-header {
+			th {
+				background-color: @ims-tree-bjColor;
+			}
+		}
+	}
+}

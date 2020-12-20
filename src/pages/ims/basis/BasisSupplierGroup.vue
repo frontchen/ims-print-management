@@ -97,7 +97,7 @@ export default {
 					path: '',
 				},
 				{
-					name: '客户群组',
+					name: '供应商群组',
 					path: '',
 				},
 			],
@@ -204,7 +204,7 @@ export default {
 				reqTime: null,
 				bizContent: {},
 			}
-			vm.api.basis.customerGroups(params).then(
+			vm.api.basis.supplierGroups(params).then(
 				(res) => {
 					vm.treeData = res.item || []
 					if (vm.treeData.length) {
@@ -228,7 +228,7 @@ export default {
 					type: 'warning',
 				})
 					.then(() => {
-						vm.delCustomerGroup(data)
+						vm.delSupplierGroup(data)
 					})
 					.catch(() => {
 						vm.$message({
@@ -272,7 +272,7 @@ export default {
 						remark: values.remark,
 					},
 				}
-				let path = 'createCustomerGroup'
+				let path = 'createSupplierGroup'
 				if (['新增', '增加同级', '增加下级'].includes(vm.addType)) {
 					if (vm.addType === '新增') {
 						params.bizContent.parentId = 0
@@ -283,10 +283,10 @@ export default {
 					if (vm.addType === '增加同级') {
 						params.bizContent.parentId = vm.rowItem.parentId
 					}
-					path = 'createCustomerGroup'
+					path = 'createSupplierGroup'
 				} else {
 					//修改
-					path = 'updateCustomerGroup'
+					path = 'updateSupplierGroup'
 					params.bizContent.id = vm.rowItem.id
 				}
 
@@ -304,7 +304,7 @@ export default {
 			})
 		},
 		//删除
-		delCustomerGroup(item) {
+		delSupplierGroup(item) {
 			let vm = this
 			let params = {
 				reqtime: null,
@@ -313,7 +313,7 @@ export default {
 				},
 			}
 
-			vm.api.basis.delCustomerGroup(params).then(
+			vm.api.basis.delSupplierGroup(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')

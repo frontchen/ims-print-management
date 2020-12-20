@@ -14,6 +14,7 @@
 					<div class="white-space"></div>
 					<div class="group-list">
 						<el-tree
+							v-loading="loading"
 							:data="treeData"
 							:props="defaultProps"
 							default-expand-all
@@ -61,6 +62,7 @@ export default {
 			// 操作类型
 			addType: '',
 			rowItem: {},
+			loading: false,
 			// 滑动到某项时选中项
 			showId: 0,
 			// 点击某项
@@ -204,8 +206,10 @@ export default {
 				reqTime: null,
 				bizContent: {},
 			}
-			vm.api.basis.customerGroups(params).then(
+			vm.loading = true
+			vm.api.basis.materialGroups(params).then(
 				(res) => {
+					vm.loading = false
 					vm.treeData = res.item || []
 					if (vm.treeData.length) {
 						vm.$refs.search.disableSearchRight(['add'])
@@ -214,6 +218,7 @@ export default {
 					}
 				},
 				(err) => {
+					vm.loading = false
 					vm.$message.error(err)
 				}
 			)
@@ -228,7 +233,7 @@ export default {
 					type: 'warning',
 				})
 					.then(() => {
-						vm.delCustomerGroup(data)
+						vm.delMaterialGroup(data)
 					})
 					.catch(() => {
 						vm.$message({
@@ -272,7 +277,7 @@ export default {
 						remark: values.remark,
 					},
 				}
-				let path = 'createCustomerGroup'
+				let path = 'createMaterialGroup'
 				if (['新增', '增加同级', '增加下级'].includes(vm.addType)) {
 					if (vm.addType === '新增') {
 						params.bizContent.parentId = 0
@@ -283,10 +288,10 @@ export default {
 					if (vm.addType === '增加同级') {
 						params.bizContent.parentId = vm.rowItem.parentId
 					}
-					path = 'createCustomerGroup'
+					path = 'createMaterialGroup'
 				} else {
 					//修改
-					path = 'updateCustomerGroup'
+					path = 'updateMaterialGroup'
 					params.bizContent.id = vm.rowItem.id
 				}
 
@@ -304,7 +309,7 @@ export default {
 			})
 		},
 		//删除
-		delCustomerGroup(item) {
+		delMaterialGroup(item) {
 			let vm = this
 			let params = {
 				reqtime: null,
@@ -313,7 +318,7 @@ export default {
 				},
 			}
 
-			vm.api.basis.delCustomerGroup(params).then(
+			vm.api.basis.delMaterialGroup(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -388,100 +393,5 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-@import '../../../components/styles/colors.less';
-.group-list {
-	min-height: 340px;
-	/deep/ .el-tree {
-		margin-top: 10px;
-		height: 340px;
-		ul {
-			&.el-dropdown-menu {
-				padding: 0px;
-			}
-			li {
-				margin: 0;
-				&.el-dropdown-item {
-					padding: 7px 16px;
-				}
-			}
-		}
-		.ims-tree-line {
-			display: inline-block;
-			width: 100%;
-			padding: 5px 0px;
-			&:hover {
-				background-color: @ims-search-bar-bgColor;
-			}
-			&:active {
-				background-color: @ims-search-bar-bgColor;
-			}
-			.ims-poptip-show {
-				display: inline-block;
-				*:focus,
-				&:focus {
-					outline: none;
-				}
-			}
-			.ims-poptip-hide {
-				display: none;
-			}
-			.ims-tree-icon {
-				margin-right: 5px;
-				font-size: 15px;
-				color: @ims-tree-color;
-			}
-			.ims-tree-icon-point {
-				color: @ims-main-color;
-			}
-		}
-		.el-icon {
-			font-family: 'mwfont' !important;
-		}
-		.el-tree-arrow {
-			width: 14px;
-			height: 26px;
-			line-height: 26px;
-			vertical-align: top;
-		}
-		.el-icon-ios-arrow-forward:before {
-			content: '\E652';
-		}
-		.el-tree-arrow-open {
-			i {
-				transform: none;
-			}
-			.el-icon-ios-arrow-forward:before {
-				content: '\E653';
-			}
-		}
-
-		.el-tree-children {
-			position: relative;
-			z-index: 0;
-			&:not(:first-child)::before {
-				z-index: -1;
-				position: absolute;
-				content: '';
-				top: 0px;
-				left: 6px;
-				width: 15px;
-				height: 15px;
-				border-left: 1px dotted #aaa;
-				border-bottom: 1px dotted #aaa;
-			}
-			&:not(:last-child)::before {
-				border-left: 0px;
-			}
-			&:not(:last-child)::after {
-				z-index: -1;
-				position: absolute;
-				content: '';
-				top: 0px;
-				left: 6px;
-				bottom: 0px;
-				border-left: 1px dotted #aaa;
-			}
-		}
-	}
-}
+@import './css/tree.less';
 </style>

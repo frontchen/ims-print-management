@@ -135,7 +135,7 @@ export default {
 						items: [
 							{
 								title: '工艺',
-								path: '/basis/list',
+								path: '/basis/craftList',
 								label: 'Old',
 							},
 							{
@@ -176,6 +176,16 @@ export default {
 							{
 								title: '物料群组',
 								path: '/basis/materialGroup',
+								label: 'Old',
+							},
+							{
+								title: '供应商',
+								path: '/basis/supplier',
+								label: 'Old',
+							},
+							{
+								title: '供应商群组',
+								path: '/basis/supplierGroup',
 								label: 'Old',
 							},
 						],

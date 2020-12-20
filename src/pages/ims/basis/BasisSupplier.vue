@@ -34,8 +34,6 @@
 								:data="items"
 								style="width: 100%"
 								height="400"
-								stripe
-								header-row-class-name="basis-container-table-header"
 							>
 								<el-table-column
 									v-for="(item, index) in headers"
@@ -101,6 +99,16 @@ import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
 import { VBtn } from 'vuetify/lib'
+const processFlagOptions = [
+	{
+		label: '加工商',
+		value: 1,
+	},
+	{
+		label: '供应商',
+		value: 0,
+	},
+]
 export default {
 	components: {
 		Submenu,
@@ -109,25 +117,25 @@ export default {
 
 	data() {
 		return {
+			loading: false,
 			searchValues: {},
 			searchData: {},
-			loading: false,
 			searchList: [
 				{
 					type: 'select',
-					name: 'materialName',
+					name: 'company',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '物料名称',
+						placeholder: '供应商名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
 						remote: true,
 						remoteMethod: (query) => {
 							this.searchBarQuery({
-								name: 'materialName',
+								name: 'company',
 								value: query,
 							})
 						},
@@ -181,40 +189,75 @@ export default {
 					path: '',
 				},
 				{
-					name: '物料',
+					name: '供应商列表',
 					path: '',
 				},
 			],
 			headers: [
 				{
-					text: '时间',
+					text: '供应商编号',
+					width: 100,
 					align: 'center',
 					sortable: false,
-					width: 100,
-					value: 'id',
+					value: 'supplierNo',
+				},
+				{ text: '公司名称', align: 'center', value: 'company' },
+				{
+					text: '公司地址',
+					align: 'center',
+					value: 'companyAddress',
+				},
+				{
+					text: '仓库地址',
+					align: 'center',
+					value: 'depotAddress',
+				},
+				{
+					text: '联系人',
+					align: 'center',
+					value: 'contact',
+				},
+				{
+					text: '电话',
+					align: 'center',
+					value: 'telephone',
+				},
+				{
+					text: '备注',
+					align: 'center',
+					value: 'remark',
+				},
+				{
+					text: '类型',
+					align: 'center',
 					render: (h, params) => {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						return h('span', unit.formatDate(params.row.createTime))
+						let processFlag = params.row.processFlag ? 1 : 0
+						let item =
+							processFlagOptions.find((v) => v.value === processFlag) || {}
+						return h('span', item.label || '')
 					},
 				},
-
+				// {
+				// 	text: '付款方式',
+				// 	value: 'paymentMethod',
+				// },
 				{
-					text: '物料编号',
+					text: '供应商分组',
 					align: 'center',
-					value: 'materialNo',
+					width: 100,
+					value: 'supplierGroup',
 				},
-				{
-					text: '物料',
-					align: 'center',
-					value: 'materialName',
-				},
-				{
-					text: '物料群组',
-					align: 'center',
-					value: 'materialGroup',
-				},
+				// {
+				// 	text: '账期天数',
+				// 	value: 'accountDays',
+				// },
+				// {
+				// 	text: '邮箱',
+				// 	value: 'email',
+				// },
 				{
 					text: '操作',
 					align: 'center',
@@ -240,49 +283,102 @@ export default {
 				isRequest: false,
 				isOpen: false,
 				inline: true,
-				width: '540px',
-				col: 1,
+				width: '600px',
+				col: 2,
 				labelWidth: '100px',
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					materialGroup: [
+					processFlag: [
 						{
+							required: true,
+							type: 'number',
+							message: '类型不能为空',
+							trigger: 'change',
+						},
+					],
+					supplierGroup: [
+						{
+							required: true,
 							type: 'array',
+							message: '群组名称不能为空',
+							trigger: 'change',
 							min: 1,
-							message: '物料群组不能为空',
-							trigger: 'blur',
 						},
 					],
-					materialName: [
+					telephone: [
 						{
 							required: true,
 							type: 'string',
-							message: '物料不能为空',
+							message: '电话不能为空',
+							trigger: 'blur',
+						},
+						{
+							pattern: unit.mobile,
+							type: 'string',
+							message: '电话格式不正确',
 							trigger: 'blur',
 						},
 					],
-					materialNo: [
+					company: [
 						{
 							required: true,
 							type: 'string',
-							message: '物料编号不能为空',
+							message: '公司名称不能为空',
 							trigger: 'blur',
 						},
 					],
+					contact: [
+						{
+							required: true,
+							type: 'string',
+							message: '联系人不能为空',
+							trigger: 'blur',
+						},
+					],
+					companyAddress: [
+						{
+							type: 'string',
+							message: '公司地址不能为空',
+							trigger: 'blur',
+						},
+					],
+					// paymentMethod: [
+					// 	{
+					// 		required: true,
+					// 		type: 'number',
+					// 		message: '付款方式不能为空',
+					// 		trigger: 'change',
+					// 	},
+					// ],
+					// email: [
+					// 	{
+					// 		type: 'email',
+					// 		message: '邮箱格式不正确',
+					// 		trigger: 'blur',
+					// 	},
+					// ],
+					// accountDays: [
+					// 	{
+					// 		pattern: unit.posInt,
+					// 		type: 'number',
+					// 		message: '账期天数格式不正确',
+					// 		trigger: 'blur',
+					// 	},
+					// ],
 				},
 				sendData: {}, // 修改联系信息暂存数据
 				data: [
 					{
 						type: 'cascader',
-						label: '物料群组',
-						name: 'materialGroup',
-						value: '',
+						label: '群组名称',
+						name: 'supplierGroup',
+						value: [],
 						attr: {
 							clearable: true,
-							placeholder: '请选择物料群组',
-							filterable: true,
+							placeholder: '请选择群组名称',
 							data: [],
+							filterable: true,
 							disabled: false,
 							props: {
 								label: 'groupName',
@@ -293,24 +389,138 @@ export default {
 					},
 					{
 						type: 'input',
-						label: '物料编号',
-						name: 'materialNo',
+						label: '公司名称',
+						name: 'company',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入物料编号',
+							placeholder: '请输入公司名称',
 							filterable: true,
 							disabled: false,
 						},
 					},
 					{
 						type: 'input',
-						label: '物料',
-						name: 'materialName',
+						label: '供应商编号',
+						name: 'supplierNo',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入名称',
+							placeholder: '请输入供应商编号',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'select',
+						label: '类型',
+						name: 'processFlag',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请选择类型',
+							filterable: true,
+							disabled: false,
+							options: processFlagOptions,
+						},
+					},
+					{
+						type: 'input',
+						label: '电话',
+						name: 'telephone',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入电话',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '联系人',
+						name: 'contact',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入联系人',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					// {
+					// 	type: 'select',
+					// 	label: '付款方式',
+					// 	name: 'paymentMethod',
+					// 	value: '',
+					// 	attr: {
+					// 		clearable: true,
+					// 		placeholder: '请选择付款方式',
+					// 		options: [],
+					// 		filterable: true,
+					// 		disabled: false,
+					// 	},
+					// },
+					{
+						type: 'input',
+						label: '公司地址',
+						name: 'companyAddress',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入公司地址',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '仓库地址',
+						name: 'depotAddress',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入仓库地址',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					// {
+					// 	type: 'input',
+					// 	label: '账期天数',
+					// 	name: 'accountDays',
+					// 	value: '',
+					// 	attr: {
+					// 		clearable: true,
+					// 		placeholder: '请输入账期天数',
+					// 		filterable: true,
+					// 		disabled: false,
+					// 	},
+					// },
+					// {
+					// 	type: 'input',
+					// 	label: '邮箱',
+					// 	name: 'email',
+					// 	value: '',
+					// 	attr: {
+					// 		clearable: true,
+					// 		placeholder: '请输入邮箱',
+					// 		filterable: true,
+					// 		disabled: false,
+					// 	},
+					// },
+
+					{
+						type: 'input',
+						label: '备注',
+						name: 'remark',
+						value: '',
+						attr: {
+							type: 'textarea',
+							maxlength: 120,
+							minlength: 1,
+							clearable: true,
+							placeholder: '请输入备注',
 							filterable: true,
 							disabled: false,
 						},
@@ -320,9 +530,9 @@ export default {
 		}
 	},
 	mounted() {
-		this.getMaterialNameList()
-		this.getMaterialGroupList()
 		this.getList()
+		this.getSupplierGroup()
+		this.getCompanyList()
 	},
 	methods: {
 		//搜索栏查询
@@ -333,7 +543,7 @@ export default {
 				endDate = endDate ? unit.formatDate(endDate) : ''
 				this.searchData.startDate = startDate
 				this.searchData.endDate = endDate
-				this.searchData.materialId = val.materialName
+				this.searchData.companyId = val.company
 				this.getList(1)
 			}
 		},
@@ -349,40 +559,53 @@ export default {
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
-
 			vm.modal1.isOpen = true
-			await vm.getMaterialNameGroup()
+			await vm.getSupplierGroupList()
+
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
 				if (type === 'modify') {
 					vm.modal1.sendData = row
 					vm.modal1.title = '修改'
 					//客户群组
-					let materialGroupData = vm.modal1.data.find(
-						(v) => v.name === 'materialGroup'
+					let customerGroupData = vm.modal1.data.find(
+						(v) => v.name === 'supplierGroup'
 					)
-					materialGroupData = materialGroupData
-						? materialGroupData.attr.data
+					customerGroupData = customerGroupData
+						? customerGroupData.attr.data
 						: []
-					let materialGroupChecked = unit.getCascaderValue(
-						materialGroupData,
-						row.materialGroupId,
+					let customerGroupChecked = unit.getCascaderValue(
+						customerGroupData,
+						row.customerGroupId,
 						{
 							children: 'sonGroups',
 							value: 'id',
 						}
 					)
+					//类型
+					let processFlag = row.processFlag ? 1 : 0
+					let processFlagItem =
+						processFlagOptions.find((v) => v.value === processFlag) || {}
 					vm.modal1.values = {
-						//物料分组
-						materialGroup: materialGroupChecked,
-						materialNo: row.materialNo, //物料编号
-						materialName: row.materialName,
+						//客户分组
+						supplierGroup: customerGroupChecked,
+						supplierNo: row.supplierNo, //供应商编号
+						company: row.company, //公司名
+						telephone: row.telephone, //电话
+						contact: row.contact, //联系人
+						remark: row.remark, //备注
+						companyAddress: row.companyAddress, //公司地址
+						depotAddress: row.depotAddress, //仓库地址
+						processFlag: processFlagItem.value,
+						// paymentMethod: row.paymentId, //付款方式
+						// accountDays: row.accountDays, //账期天数
+						// email: row.email, //邮箱
 					}
 				}
 			})
 		},
 		//新增弹框 获取群组名称下拉列表
-		async getMaterialNameGroup(param = {}) {
+		async getSupplierGroupList(param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
@@ -390,52 +613,54 @@ export default {
 					...param,
 				},
 			}
-			let res = await vm.api.basis.materialGroups(params).catch((err) => {
+			let res = await vm.api.basis.supplierGroups(params).catch((err) => {
 				vm.$message.error(err)
 			})
 			if (!res) {
 				return false
 			}
-			let index = vm.modal1.data.findIndex((v) => v.name === 'materialGroup')
+			let index = vm.modal1.data.findIndex((v) => v.name === 'supplierGroup')
 			if (index === -1) return false
 			vm.$nextTick(() => {
 				vm.$set(vm.modal1.data[index].attr, 'data', res.item || [])
 			})
 		},
+
 		// 搜索栏select cascader切换事件
 		changeSearchList(item) {
-			if (item.name === 'materialName') {
-				this.searchData.materialName = ''
-				this.searchData.materialId = item.value
+			if (item.name === 'company') {
+				this.searchData.companyName = ''
+				this.searchData.companyId = item.value
 				this.getList(1)
 			}
 		},
 		// 搜索栏select cascader模糊搜索
 		searchBarQuery(item) {
-			if (item.name === 'materialName') {
-				this.searchData.materialName = item.value
+			if (item.name === 'company') {
+				this.searchData.companyName = item.value
 				this.getCompanyList(1, {
-					materialName: item.value,
+					company: item.value,
 				})
 			}
 		},
 		//点击tree节点 每一级触发
 		nodeClickItem(data) {
 			this.getList(1, {
-				materialGroupId: data.id,
+				customerGroupId: data.id,
 			})
 		},
+		//列表查询
 		getList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			if (vm.searchData.materialId) {
-				params.bizContent.id = vm.searchData.materialId
+			if (vm.searchData.companyId) {
+				params.bizContent.id = vm.searchData.companyId
 			}
-			if (vm.searchData.materialName) {
-				params.bizContent.materialName = vm.searchData.materialName
+			if (vm.searchData.companyName) {
+				params.bizContent.company = vm.searchData.companyName
 			}
 			if (vm.searchData.startDate) {
 				params.bizContent.startDate = vm.searchData.startDate
@@ -444,7 +669,7 @@ export default {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.loading = true
-			vm.api.basis.materials(params).then(
+			vm.api.basis.suppliers(params).then(
 				(res) => {
 					vm.loading = false
 					if (!res) return false
@@ -459,39 +684,21 @@ export default {
 				}
 			)
 		},
-		async getMaterialGroupList(param = {}) {
-			let vm = this
-			let params = {
-				reqTime: null,
-				bizContent: {
-					...param,
-				},
-			}
-			let res = await vm.api.basis.materialGroups(params).catch((err) => {
-				vm.$message.error(err)
-			})
-			if (!res) {
-				return false
-			}
-			vm.$nextTick(() => {
-				vm.treeData = res.item || []
-			})
-		},
-		//搜索栏-物料名称下拉列表
-		getMaterialNameList(page = 1, param = {}) {
+		//搜索栏-公司名称下拉列表
+		getCompanyList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			vm.api.basis.materials(params).then(
+			vm.api.basis.suppliers(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
-					let index = vm.searchList.findIndex((v) => v.name === 'materialName')
+					let index = vm.searchList.findIndex((v) => v.name === 'company')
 					if (index === -1) return
 					list = list.map((v) => {
-						v.label = v.materialName
+						v.label = v.company
 						v.value = v.id
 						return v
 					})
@@ -502,16 +709,33 @@ export default {
 				}
 			)
 		},
-		delMaterial(row) {
+		async getSupplierGroup(param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: {
+					...param,
+				},
+			}
+			let res = await vm.api.basis.supplierGroups(params).catch((err) => {
+				vm.$message.error(err)
+			})
+			if (!res) {
+				return false
+			}
+			vm.$nextTick(() => {
+				vm.treeData = res.item || []
+			})
+		},
+		delSupplier(row) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { id: row.id },
 			}
-			vm.api.basis.delMaterial(params).then(
+			vm.api.basis.delSupplier(params).then(
 				() => {
 					vm.getList()
-					vm.getMaterialNameList()
 					vm.$message.success('删除成功!')
 				},
 				(err) => {
@@ -525,50 +749,58 @@ export default {
 		handleCurrentChange(val) {
 			this.getList(val)
 		},
-		//新增
 		addSure(values) {
 			let vm = this
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
-
 				//客户群组
-				let materialGroupData = vm.modal1.data.find(
-					(v) => v.name === 'materialGroup'
+				let supplierGroupData = vm.modal1.data.find(
+					(v) => v.name === 'supplierGroup'
 				)
-				materialGroupData = materialGroupData ? materialGroupData.attr.data : []
-				let materialGroupItem = unit.getCascaderData(
-					values.materialGroup,
-					materialGroupData,
+				supplierGroupData = supplierGroupData ? supplierGroupData.attr.data : []
+				let supplierGroupItem = unit.getCascaderData(
+					values.supplierGroup,
+					supplierGroupData,
 					{
 						children: 'sonGroups',
 						value: 'id',
 					}
 				)
-				materialGroupItem = materialGroupItem.length
-					? materialGroupItem[materialGroupItem.length - 1]
+				supplierGroupItem = supplierGroupItem.length
+					? supplierGroupItem[supplierGroupItem.length - 1]
 					: {}
+
 				let params = {
 					reqtime: unit.formatDate(new Date()),
 					bizContent: {
-						materialName: values.materialName,
-						materialNo: values.materialNo,
-						materialGroup: materialGroupItem.groupName,
-						materialGroupId: materialGroupItem.id,
+						supplierGroupId: supplierGroupItem.id, //供应商分组
+						supplierGroup: supplierGroupItem.groupName,
+						supplierNo: values.supplierNo, //供应商编号
+						company: values.company, //公司名
+						telephone: values.telephone, //电话
+						contact: values.contact, //联系人
+						remark: values.remark, //备注
+						companyAddress: values.companyAddress, //公司地址
+						depotAddress: values.depotAddress, //仓库地址
+						processFlag: values.processFlag, //类别
+						// paymentId: paymentMethodItem.value, //付款方式
+						// paymentMethod: paymentMethodItem.label,
+						// accountDays: values.accountDays, //账期天数
+						// email: values.email, //邮箱
 					},
 				}
 				let row = vm.modal1.sendData
-				let path = 'createMaterial'
+				let path = 'createSupplier'
 				if (vm.modal1.title === '新增') {
-					path = 'createMaterial'
+					path = 'createSupplier'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updateMaterial'
+					path = 'updateSupplier'
 					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
 					() => {
 						vm.getList()
-						vm.getMaterialNameList()
 						vm.$message.success('操作成功!')
 						vm.modal1.isOpen = false
 					},
@@ -620,7 +852,7 @@ export default {
 												type: 'warning',
 											})
 												.then(() => {
-													vm.delMaterial(row)
+													vm.delSupplier(row)
 												})
 												.catch(() => {
 													vm.$message({

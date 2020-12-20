@@ -82,7 +82,6 @@
 </template>
 
 <script>
-import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -92,11 +91,7 @@ export default {
 		Submenu,
 		Expand,
 	},
-	filters: {
-		price(val) {
-			return filters.currency(val, { format: true, prefix: '' })
-		},
-	},
+
 	data() {
 		return {
 			loading: false,
@@ -105,22 +100,15 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'knifePlate',
+					name: 'technologyName',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '刀版名称',
+						placeholder: '工艺名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
-						remote: true,
-						remoteMethod: (query) => {
-							this.searchBarQuery({
-								name: 'knifePlate',
-								value: query,
-							})
-						},
 					},
 				},
 				{
@@ -171,29 +159,26 @@ export default {
 					path: '',
 				},
 				{
-					name: '刀版',
+					name: '工艺列表',
 					path: '',
 				},
 			],
 			headers: [
 				{
 					text: '时间',
+					width: 100,
 					align: 'center',
 					sortable: false,
-					width: 100,
 					value: 'id',
 					render: (h, params) => {
-						if (unit.isEmptyObject(params.row)) {
-							return false
-						}
-						return h('span', unit.formatDate(params.row.createTime))
+						return this.renderDate(h, params)
 					},
 				},
-
+				{ text: '工艺编号', align: 'center', value: 'technologyNo' },
 				{
-					text: '刀版',
-					value: 'knifePlate',
+					text: '工艺名称',
 					align: 'center',
+					value: 'technologyName',
 				},
 
 				{
@@ -223,11 +208,19 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					knifePlate: [
+					technologyNo: [
 						{
 							required: true,
 							type: 'string',
-							message: '刀版不能为空',
+							message: '工艺编号不能为空',
+							trigger: 'blur',
+						},
+					],
+					technologyName: [
+						{
+							required: true,
+							type: 'string',
+							message: '工艺名称不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -236,12 +229,24 @@ export default {
 				data: [
 					{
 						type: 'input',
-						label: '刀版',
-						name: 'knifePlate',
+						label: '工艺名称',
+						name: 'technologyName',
 						value: '',
 						attr: {
 							clearable: true,
 							placeholder: '请输入名称',
+							filterable: true,
+							disabled: false,
+						},
+					},
+					{
+						type: 'input',
+						label: '工艺编号',
+						name: 'technologyNo',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入部门',
 							filterable: true,
 							disabled: false,
 						},
@@ -251,7 +256,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.getKnifePlateList()
+		this.getTechnologyNameList()
 		this.getList()
 	},
 	methods: {
@@ -263,57 +268,65 @@ export default {
 				endDate = endDate ? unit.formatDate(endDate) : ''
 				this.searchData.startDate = startDate
 				this.searchData.endDate = endDate
-				this.searchData.knifePlateId = val.company
+				this.searchData.technologyId = val.technologyName
 				this.getList(1)
 			}
 		},
 		// 搜索栏按钮点击
 		showModal(type, row) {
 			let vm = this
+			if (type === 'add' || type === 'modify') {
+				vm.showAddModifyModal(type, row)
+			}
+		},
+		async showAddModifyModal(type, row) {
+			let vm = this
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
-
 			vm.modal1.isOpen = true
+
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
 				if (type === 'modify') {
 					vm.modal1.sendData = row
 					vm.modal1.title = '修改'
+
 					vm.modal1.values = {
-						knifePlate: row.knifePlate,
+						technologyNo: row.technologyNo, //工艺编号
+						technologyName: row.technologyName, //工艺名称
 					}
 				}
 			})
 		},
 		// 搜索栏select cascader切换事件
 		changeSearchList(item) {
-			if (item.name === 'company') {
-				this.searchData.knifePlate = ''
-				this.searchData.knifePlateId = item.value
+			if (item.name === 'technologyName') {
+				this.searchData.technologyName = ''
+				this.searchData.technologyId = item.value
 				this.getList(1)
 			}
 		},
 		// 搜索栏select cascader模糊搜索
 		searchBarQuery(item) {
-			if (item.name === 'company') {
-				this.searchData.knifePlate = item.value
-				this.getKnifePlateList(1, {
-					knifePlate: item.value,
+			if (item.name === 'technologyName') {
+				this.searchData.technologyName = item.value
+				this.getTechnologyNameList(1, {
+					technologyName: item.value,
 				})
 			}
 		},
-		getList(page = 1) {
+		getList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize },
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			if (vm.searchData.knifePlateId) {
-				params.bizContent.id = vm.searchData.knifePlateId
+			if (vm.searchData.technologyName) {
+				params.bizContent.technologyName = vm.searchData.technologyName
 			}
-			if (vm.searchData.knifePlate) {
-				params.bizContent.knifePlate = vm.searchData.knifePlate
+			if (vm.searchData.technologyId) {
+				params.bizContent.id = vm.searchData.technologyId
 			}
 			if (vm.searchData.startDate) {
 				params.bizContent.startDate = vm.searchData.startDate
@@ -322,7 +335,7 @@ export default {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.loading = true
-			vm.api.basis.knifePlates(params).then(
+			vm.api.basis.technologys(params).then(
 				(res) => {
 					vm.loading = false
 					if (!res) return false
@@ -337,21 +350,23 @@ export default {
 				}
 			)
 		},
-		//搜索栏-刀版下拉列表
-		getKnifePlateList(page = 1, param = {}) {
+		//搜索栏-公司名称下拉列表
+		getTechnologyNameList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			vm.api.basis.knifePlates(params).then(
+			vm.api.basis.technologys(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
-					let index = vm.searchList.findIndex((v) => v.name === 'knifePlate')
+					let index = vm.searchList.findIndex(
+						(v) => v.name === 'technologyName'
+					)
 					if (index === -1) return
 					list = list.map((v) => {
-						v.label = v.knifePlate
+						v.label = v.technologyName
 						v.value = v.id
 						return v
 					})
@@ -362,16 +377,16 @@ export default {
 				}
 			)
 		},
-		delKnifePlate(row) {
+		delTechnology(row) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { id: row.id },
 			}
-			vm.api.basis.delKnifePlate(params).then(
-				() => {
+			vm.api.basis.delTechnology(params).then(
+				(res) => {
 					vm.getList()
-					vm.$message.success('删除成功!')
+					vm.$message.success(res.msg || '删除成功!')
 				},
 				(err) => {
 					vm.$message.error(err)
@@ -384,21 +399,26 @@ export default {
 		handleCurrentChange(val) {
 			this.getList(val)
 		},
+
+		selectChange() {},
 		addSure(values) {
 			let vm = this
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
 				let params = {
 					reqtime: unit.formatDate(new Date()),
-					bizContent: { knifePlate: values.knifePlate },
+					bizContent: {
+						technologyName: values.technologyName,
+						technologyNo: values.technologyNo,
+					},
 				}
 				let row = vm.modal1.sendData
-				let path = 'createKnifePlate'
+				let path = 'createTechnology'
 				if (vm.modal1.title === '新增') {
-					path = 'createKnifePlate'
+					path = 'createTechnology'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updateKnifePlate'
+					path = 'createTechnology'
 					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -413,7 +433,14 @@ export default {
 				)
 			})
 		},
-		selectChange() {},
+		//列表显示下单时间
+		renderDate(h, params) {
+			let row = params.row
+			if (unit.isEmptyObject(row)) {
+				return false
+			}
+			return h('span', unit.formatDate(row.createTime || ''))
+		},
 
 		renderBtn(h, params) {
 			let vm = this
@@ -455,7 +482,7 @@ export default {
 												type: 'warning',
 											})
 												.then(() => {
-													vm.delKnifePlate(row)
+													vm.delTechnology(row)
 												})
 												.catch(() => {
 													vm.$message({
@@ -502,9 +529,3 @@ export default {
 	},
 }
 </script>
-<style lang="less" scoped>
-@import '../../../components/styles/colors.less';
-.basis-container {
-	width: 100%;
-}
-</style>

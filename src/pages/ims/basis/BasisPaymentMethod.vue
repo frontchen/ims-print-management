@@ -16,6 +16,7 @@
 					<div class="white-space"></div>
 					<div class="basis-container">
 						<el-table
+							v-loading="loading"
 							:data="items"
 							style="width: 100%"
 							height="400"
@@ -93,6 +94,7 @@ export default {
 
 	data() {
 		return {
+			loading: false,
 			searchValues: {},
 			searchData: {},
 			searchList: [
@@ -308,8 +310,10 @@ export default {
 			if (vm.searchData.endDate) {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
+			vm.loading = true
 			vm.api.basis.paymentMethods(params).then(
 				(res) => {
+					vm.loading = false
 					if (!res) return false
 					let list = res.item || []
 					vm.items = list
@@ -317,6 +321,7 @@ export default {
 					vm.pageIndex = res.pageNo
 				},
 				(err) => {
+					vm.loading = false
 					vm.$message.error(err)
 				}
 			)

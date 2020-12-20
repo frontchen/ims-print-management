@@ -1,5 +1,5 @@
 //基础功能
-const BasisList = () => import('Ims/basis/BasisList') // 工艺列表
+const BasisCraftList = () => import('Ims/basis/BasisCraftList') // 工艺列表
 const BasisCustomerGroup = () => import('Ims/basis/BasisCustomerGroup') // 客户群组名称
 const BasisCustomer = () => import('Ims/basis/BasisCustomer') // 客户列表
 const BasisPaymentMethod = () => import('Ims/basis/BasisPaymentMethod') // 付款方式
@@ -8,12 +8,14 @@ const BasisDepartment = () => import('Ims/basis/BasisDepartment') // 部门列�
 const BasisKnifePlate = () => import('Ims/basis/BasisKnifePlate') // 刀版
 const BasisMaterial = () => import('Ims/basis/BasisMaterial') // 物料
 const BasisMaterialGroup = () => import('Ims/basis/BasisMaterialGroup') // 物料群组
+const BasisSupplier = () => import('Ims/basis/BasisSupplier') // 供应商
+const BasisSupplierGroup = () => import('Ims/basis/BasisSupplierGroup') // 供应商群组
 const basis = [
   {
-    path: '/basis/list',
-    name: 'basis-list',
+    path: '/basis/craftList',
+    name: 'basis-craftList',
     title: '工艺列表',
-    component: BasisList
+    component: BasisCraftList
   },
   {
     path: '/basis/customerGroup',
@@ -62,6 +64,18 @@ const basis = [
     name: 'basis-materialGroup',
     title: '物料群组',
     component: BasisMaterialGroup
+  },
+  {
+    path: '/basis/supplier',
+    name: 'basis-supplier',
+    title: '供应商列表',
+    component: BasisSupplier
+  },
+  {
+    path: '/basis/supplierGroup',
+    name: 'basis-supplierGroup',
+    title: '供应商群组',
+    component: BasisSupplierGroup
   }
 ]
 
