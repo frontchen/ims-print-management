@@ -82,6 +82,7 @@
 </template>
 
 <script>
+import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -91,7 +92,11 @@ export default {
 		Submenu,
 		Expand,
 	},
-
+	filters: {
+		price(val) {
+			return filters.currency(val, { format: true, prefix: '' })
+		},
+	},
 	data() {
 		return {
 			loading: false,
@@ -100,19 +105,19 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'departmentName',
+					name: 'staffName',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '部门名称',
+						placeholder: '员工姓名名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
 						remote: true,
 						remoteMethod: (query) => {
 							this.searchBarQuery({
-								name: 'departmentName',
+								name: 'staffName',
 								value: query,
 							})
 						},
@@ -166,25 +171,39 @@ export default {
 					path: '',
 				},
 				{
-					name: '部门',
+					name: '员工姓名',
 					path: '',
 				},
 			],
 			headers: [
 				{
-					text: '编号',
+					text: '时间',
 					align: 'center',
 					sortable: false,
 					width: 100,
-					value: 'departmentNo',
+					value: 'id',
+					render: (h, params) => {
+						if (unit.isEmptyObject(params.row)) {
+							return false
+						}
+						return h('span', unit.formatDate(params.row.createTime))
+					},
 				},
-
 				{
 					text: '部门',
-					align: 'center',
 					value: 'departmentName',
+					align: 'center',
 				},
-
+				{
+					text: '员工姓名',
+					value: 'staffName',
+					align: 'center',
+				},
+				{
+					text: '员工编号',
+					value: 'staffNo',
+					align: 'center',
+				},
 				{
 					text: '操作',
 					align: 'center',
@@ -212,19 +231,27 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					departmentNo: [
+					department: [
+						{
+							required: true,
+							type: 'number',
+							message: '部门不能为空',
+							trigger: 'change',
+						},
+					],
+					staffName: [
 						{
 							required: true,
 							type: 'string',
-							message: '部门编号不能为空',
+							message: '员工姓名不能为空',
 							trigger: 'blur',
 						},
 					],
-					departmentName: [
+					staffNo: [
 						{
 							required: true,
 							type: 'string',
-							message: '部门不能为空',
+							message: '员工编号不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -232,25 +259,38 @@ export default {
 				sendData: {}, // 修改联系信息暂存数据
 				data: [
 					{
-						type: 'input',
-						label: '部门编号',
-						name: 'departmentNo',
+						type: 'select',
+						label: '部门',
+						name: 'department',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入部门编号',
+							placeholder: '请选择部门',
+							filterable: true,
+							disabled: false,
+							options: [],
+						},
+					},
+					{
+						type: 'input',
+						label: '员工姓名',
+						name: 'staffName',
+						value: '',
+						attr: {
+							clearable: true,
+							placeholder: '请输入名称',
 							filterable: true,
 							disabled: false,
 						},
 					},
 					{
 						type: 'input',
-						label: '部门',
-						name: 'departmentName',
+						label: '员工编号',
+						name: 'staffNo',
 						value: '',
 						attr: {
 							clearable: true,
-							placeholder: '请输入名称',
+							placeholder: '请输入员工编号',
 							filterable: true,
 							disabled: false,
 						},
@@ -260,7 +300,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.getDepartmentList()
+		this.getStaffNameList()
 		this.getList()
 	},
 	methods: {
@@ -272,44 +312,47 @@ export default {
 				endDate = endDate ? unit.formatDate(endDate) : ''
 				this.searchData.startDate = startDate
 				this.searchData.endDate = endDate
-				this.searchData.departmentId = val.departmentName
+				this.searchData.staffNameId = val.company
 				this.getList(1)
 			}
 		},
 		// 搜索栏按钮点击
-		showModal(type, row) {
+		async showModal(type, row) {
 			let vm = this
 			if (type === 'add') {
 				vm.modal1.title = '新增'
 			}
 
 			vm.modal1.isOpen = true
+			let params = row ? { departmentId: row.departmentId } : {}
+			await vm.getDepartmentList(1, params)
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
 				if (type === 'modify') {
 					vm.modal1.sendData = row
 					vm.modal1.title = '修改'
 					vm.modal1.values = {
-						departmentNo: row.departmentNo,
-						departmentName: row.departmentName,
+						department: row.departmentId,
+						staffNo: row.staffNo,
+						staffName: row.staffName,
 					}
 				}
 			})
 		},
 		// 搜索栏select cascader切换事件
 		changeSearchList(item) {
-			if (item.name === 'departmentName') {
-				this.searchData.departmentName = ''
-				this.searchData.departmentId = item.value
+			if (item.name === 'staffName') {
+				this.searchData.staffName = ''
+				this.searchData.staffNameId = item.value
 				this.getList(1)
 			}
 		},
 		// 搜索栏select cascader模糊搜索
 		searchBarQuery(item) {
-			if (item.name === 'departmentName') {
-				this.searchData.departmentName = item.value
-				this.getDepartmentList(1, {
-					departmentName: item.value,
+			if (item.name === 'staffName') {
+				this.searchData.staffName = item.value
+				this.getStaffNameList(1, {
+					staffName: item.value,
 				})
 			}
 		},
@@ -319,11 +362,11 @@ export default {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
-			if (vm.searchData.departmentId) {
-				params.bizContent.id = vm.searchData.departmentId
+			if (vm.searchData.staffNameId) {
+				params.bizContent.id = vm.searchData.staffNameId
 			}
-			if (vm.searchData.departmentName) {
-				params.bizContent.departmentName = vm.searchData.departmentName
+			if (vm.searchData.staffName) {
+				params.bizContent.staffName = vm.searchData.staffName
 			}
 			if (vm.searchData.startDate) {
 				params.bizContent.startDate = vm.searchData.startDate
@@ -332,7 +375,7 @@ export default {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.loading = true
-			vm.api.basis.departments(params).then(
+			vm.api.basis.staffs(params).then(
 				(res) => {
 					vm.loading = false
 					if (!res) return false
@@ -347,23 +390,21 @@ export default {
 				}
 			)
 		},
-		//搜索栏-公司名称下拉列表
-		getDepartmentList(page = 1, param = {}) {
+		//搜索栏-员工姓名下拉列表
+		getStaffNameList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			vm.api.basis.departments(params).then(
+			vm.api.basis.staffs(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
-					let index = vm.searchList.findIndex(
-						(v) => v.name === 'departmentName'
-					)
+					let index = vm.searchList.findIndex((v) => v.name === 'staffName')
 					if (index === -1) return
 					list = list.map((v) => {
-						v.label = v.departmentName
+						v.label = v.staffName
 						v.value = v.id
 						return v
 					})
@@ -374,16 +415,42 @@ export default {
 				}
 			)
 		},
-		delDepartment(row) {
+		//新增弹框 部门下拉列表
+		async getDepartmentList(page = 1, param = {}) {
+			let vm = this
+			let params = {
+				reqTime: null,
+				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+			}
+			let res = await vm.api.basis.departments(params).catch((err) => {
+				vm.$message.error(err)
+			})
+			if (!res) {
+				return false
+			}
+			let index = vm.modal1.data.findIndex((v) => v.name === 'department')
+			if (index === -1) return false
+
+			let list = res.item || []
+			list = list.map((v) => {
+				v.label = v.departmentName
+				v.value = v.id
+				return v
+			})
+			vm.$nextTick(() => {
+				vm.$set(vm.modal1.data[index].attr, 'options', list)
+			})
+		},
+		delStaff(row) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { id: row.id },
 			}
-			vm.api.basis.delDepartment(params).then(
+			vm.api.basis.delStaff(params).then(
 				() => {
 					vm.getList()
-					vm.getDepartmentList()
+					vm.getStaffNameList()
 					vm.$message.success('删除成功!')
 				},
 				(err) => {
@@ -401,27 +468,34 @@ export default {
 			let vm = this
 			vm.$refs.modal1.validate((valid) => {
 				if (!valid) return false
+				//部门
+				let departmentData = vm.modal1.data.find((v) => v.name === 'department')
+				departmentData = departmentData ? departmentData.attr.options : []
+				let departmentItem =
+					departmentData.find((v) => v.value === values.department) || {}
 				let params = {
 					reqtime: unit.formatDate(new Date()),
 					bizContent: {
-						departmentName: values.departmentName,
-						departmentNo: values.departmentNo,
+						staffName: values.staffName,
+						staffNo: values.staffNo,
+						departmentId: departmentItem.value,
+						departmentName: departmentItem.label,
 					},
 				}
 				let row = vm.modal1.sendData
-				let path = 'createDepartment'
+				let path = 'createStaff'
 				if (vm.modal1.title === '新增') {
-					path = 'createDepartment'
+					path = 'createStaff'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updateDepartment'
+					path = 'updateStaff'
 					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
-					(res) => {
+					() => {
 						vm.getList()
-						vm.getDepartmentList()
-						vm.$message.success(res.msg || '操作成功!')
+						vm.getStaffNameList()
+						vm.$message.success('操作成功!')
 						vm.modal1.isOpen = false
 					},
 					(err) => {
@@ -472,7 +546,7 @@ export default {
 												type: 'warning',
 											})
 												.then(() => {
-													vm.delDepartment(row)
+													vm.delStaff(row)
 												})
 												.catch(() => {
 													vm.$message({

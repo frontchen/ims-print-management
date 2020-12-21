@@ -164,6 +164,11 @@ export default {
 								label: 'Old',
 							},
 							{
+								title: '员工列表',
+								path: '/basis/staff',
+								label: 'Old',
+							},
+							{
 								title: '刀版',
 								path: '/basis/knifePlate',
 								label: 'Old',

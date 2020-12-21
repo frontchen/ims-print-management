@@ -10,6 +10,7 @@ const BasisMaterial = () => import('Ims/basis/BasisMaterial') // 物料
 const BasisMaterialGroup = () => import('Ims/basis/BasisMaterialGroup') // 物料群组
 const BasisSupplier = () => import('Ims/basis/BasisSupplier') // 供应商
 const BasisSupplierGroup = () => import('Ims/basis/BasisSupplierGroup') // 供应商群组
+const BasisStaff = () => import('Ims/basis/BasisStaff') // 员工列表
 const basis = [
   {
     path: '/basis/craftList',
@@ -76,6 +77,12 @@ const basis = [
     name: 'basis-supplierGroup',
     title: '供应商群组',
     component: BasisSupplierGroup
+  },
+  {
+    path: '/basis/staff',
+    name: 'basis-staff',
+    title: '供应商群组',
+    component: BasisStaff
   }
 ]
 
