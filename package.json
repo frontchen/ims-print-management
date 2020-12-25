@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --mode dev",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --mode prod",
     "lint": "vue-cli-service lint",
     "clean": "rm -rf dist .temp && mkdir -p .temp/",
     "upload-test": "tar -cvf .temp/dist.tar dist/ && fab deploy-test",
