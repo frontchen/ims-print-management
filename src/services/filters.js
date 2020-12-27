@@ -1,5 +1,14 @@
 import moment from 'moment'
 const filters = {
+  // 格式化序号
+  serialNumber: (num, options = { bits: 3, identifier: '0' }) => {
+    num = num * 1
+    if (isNaN(num)) {
+      return ''
+    }
+    let value = (options.identifier || '0').repeat(options.bits || 3) + num
+    return value.slice(-options.bits || 3)
+  },
   currency: (val, options = { prefix: '¥', fixed: 2, format: false }) => {
     let money = val * 1
     if (isNaN(money)) {

@@ -100,12 +100,12 @@ export default {
 			searchList: [
 				{
 					type: 'select',
-					name: 'cutSize',
+					name: 'deliveryMethod',
 					value: '',
 					disabled: true,
 					attr: {
 						filterable: true,
-						placeholder: '开料尺寸名称',
+						placeholder: '发货方式名称',
 						clearable: true,
 						options: [],
 						size: 'mini',
@@ -159,7 +159,7 @@ export default {
 					path: '',
 				},
 				{
-					name: '开料尺寸',
+					name: '发货方式',
 					path: '',
 				},
 			],
@@ -179,9 +179,9 @@ export default {
 				},
 
 				{
-					text: '开料尺寸',
+					text: '发货方式',
 					align: 'center',
-					value: 'cutSize',
+					value: 'deliveryMethod',
 				},
 
 				{
@@ -211,11 +211,11 @@ export default {
 				labelPosition: 'right',
 				values: {},
 				ruleValidate: {
-					cutSize: [
+					deliveryMethod: [
 						{
 							required: true,
 							type: 'string',
-							message: '开料尺寸不能为空',
+							message: '发货方式不能为空',
 							trigger: 'blur',
 						},
 					],
@@ -224,8 +224,8 @@ export default {
 				data: [
 					{
 						type: 'input',
-						label: '开料尺寸',
-						name: 'cutSize',
+						label: '发货方式',
+						name: 'deliveryMethod',
 						value: '',
 						attr: {
 							clearable: true,
@@ -240,7 +240,7 @@ export default {
 	},
 	mounted() {
 		this.getList()
-		this.getCutsizeList()
+		this.getDeliveryMethodList()
 	},
 	methods: {
 		//搜索栏查询
@@ -251,7 +251,7 @@ export default {
 				endDate = endDate ? unit.formatDate(endDate) : ''
 				this.searchData.startDate = startDate
 				this.searchData.endDate = endDate
-				this.searchData.cutSizeId = val.cutSize
+				this.searchData.deliveryMethodId = val.deliveryMethod
 				this.getList(1)
 			}
 		},
@@ -269,25 +269,25 @@ export default {
 					vm.modal1.sendData = row
 					vm.modal1.title = '修改'
 					vm.modal1.values = {
-						cutSize: row.cutSize,
+						deliveryMethod: row.deliveryMethod,
 					}
 				}
 			})
 		},
 		// 搜索栏select cascader切换事件
 		changeSearchList(item) {
-			if (item.name === 'cutSize') {
-				this.searchData.cutSize = ''
+			if (item.name === 'deliveryMethod') {
+				this.searchData.deliveryMethod = ''
 				this.searchData.id = item.value
 				this.getList(1)
 			}
 		},
 		// 搜索栏select cascader模糊搜索
 		searchBarQuery(item) {
-			if (item.name === 'cutSize') {
-				this.searchData.cutSize = item.value
-				this.getCutsizeList(1, {
-					cutSize: item.value,
+			if (item.name === 'deliveryMethod') {
+				this.searchData.deliveryMethod = item.value
+				this.getDeliveryMethodList(1, {
+					deliveryMethod: item.value,
 				})
 			}
 		},
@@ -297,11 +297,11 @@ export default {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize },
 			}
-			if (vm.searchData.cutSizeId) {
-				params.bizContent.id = vm.searchData.cutSizeId
+			if (vm.searchData.deliveryMethodId) {
+				params.bizContent.id = vm.searchData.deliveryMethodId
 			}
-			if (vm.searchData.cutSize) {
-				params.bizContent.cutSize = vm.searchData.cutSize
+			if (vm.searchData.deliveryMethod) {
+				params.bizContent.deliveryMethod = vm.searchData.deliveryMethod
 			}
 			if (vm.searchData.startDate) {
 				params.bizContent.startDate = vm.searchData.startDate
@@ -310,7 +310,7 @@ export default {
 				params.bizContent.endDate = vm.searchData.endDate
 			}
 			vm.loading = true
-			vm.api.basis.cutSizes(params).then(
+			vm.api.basis.deliveryMethods(params).then(
 				(res) => {
 					vm.loading = false
 					if (!res) return false
@@ -325,21 +325,23 @@ export default {
 				}
 			)
 		},
-		//搜索栏-开料尺寸下拉列表
-		getCutsizeList(page = 1, param = {}) {
+		//搜索栏-发货方式下拉列表
+		getDeliveryMethodList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
 			}
-			vm.api.basis.cutSizes(params).then(
+			vm.api.basis.deliveryMethods(params).then(
 				(res) => {
 					if (!res) return false
 					let list = res.item || []
-					let index = vm.searchList.findIndex((v) => v.name === 'cutSize')
+					let index = vm.searchList.findIndex(
+						(v) => v.name === 'deliveryMethod'
+					)
 					if (index === -1) return
 					list = list.map((v) => {
-						v.label = v.cutSize
+						v.label = v.deliveryMethod
 						v.value = v.id
 						return v
 					})
@@ -350,13 +352,13 @@ export default {
 				}
 			)
 		},
-		delCutSize(row) {
+		delDeliveryMethod(row) {
 			let vm = this
 			let params = {
 				reqTime: null,
 				bizContent: { id: row.id },
 			}
-			vm.api.basis.delCutSize(params).then(
+			vm.api.basis.delDeliveryMethod(params).then(
 				() => {
 					vm.getList()
 					vm.$message.success('删除成功!')
@@ -378,15 +380,15 @@ export default {
 				if (!valid) return false
 				let params = {
 					reqtime: unit.formatDate(new Date()),
-					bizContent: { cutSize: values.cutSize },
+					bizContent: { deliveryMethod: values.deliveryMethod },
 				}
 				let row = vm.modal1.sendData
-				let path = 'createCutSize'
+				let path = 'createDeliveryMethod'
 				if (vm.modal1.title === '新增') {
-					path = 'createCutSize'
+					path = 'createDeliveryMethod'
 				}
 				if (vm.modal1.title === '修改') {
-					path = 'updateCutSize'
+					path = 'updateDeliveryMethod'
 					params.bizContent.id = row.id
 				}
 				vm.api.basis[path](params).then(
@@ -443,7 +445,7 @@ export default {
 												type: 'warning',
 											})
 												.then(() => {
-													vm.delCutSize(row)
+													vm.delDeliveryMethod(row)
 												})
 												.catch(() => {
 													vm.$message({

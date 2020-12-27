@@ -337,10 +337,12 @@ export default {
 							data: [],
 							filterable: true,
 							disabled: false,
+							showAllLevels: false,
 							props: {
 								label: 'groupName',
 								children: 'sonGroups',
 								value: 'id',
+								checkStrictly: true,
 							},
 						},
 					},

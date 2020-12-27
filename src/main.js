@@ -11,6 +11,7 @@ import store from './store'
 import * as Api from './api'
 import { storeKey } from './data'
 
+import loadmore from 'Components/directive/loadmore'
 // global components
 import GlobalComponents from './globalComponents'
 
@@ -57,7 +58,7 @@ resetStore()
 Vue.component('rotateSquare2', RotateSquare2)
 Vue.component('vuePerfectScrollbar', VuePerfectScrollbar)
 Vue.use(ElementUI)
-
+Vue.use(loadmore)
 // 注册全局钩子拦截【登录】
 router.beforeEach((to, from, next) => {
   // 404

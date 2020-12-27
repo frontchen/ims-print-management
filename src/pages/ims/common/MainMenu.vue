@@ -193,6 +193,11 @@ export default {
 								path: '/basis/supplierGroup',
 								label: 'Old',
 							},
+							{
+								title: '发货方式',
+								path: '/basis/deliveryMethod',
+								label: 'Old',
+							},
 						],
 					},
 				],

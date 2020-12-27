@@ -103,7 +103,7 @@
       margin-right: 0px;
     }
   }
-
+  
   // list
   .modal-list {
     width: 100%;
@@ -325,8 +325,9 @@
       line-height: 28px;
       padding: 0 24px 0 8px;
     }
+    
   }
-
+  
   .el-cascader-disabled {
     .el-cascader-label {
       color: @ims-gray2-color;
@@ -481,4 +482,26 @@
       }
     }
   }
+}
+/deep/ .el-cascader__dropdown{
+  .el-cascader-panel{
+    .el-radio {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      position: absolute;
+      top: 0px;
+      right: 10px;
+     }
+     .el-cascader-node__postfix {
+      top: 10px;
+     }
+     .el-radio__input {
+      visibility: hidden;
+     }
+  }
+   .el-cascader-node__label {
+    width: 157px;
+   }
+ 
 }

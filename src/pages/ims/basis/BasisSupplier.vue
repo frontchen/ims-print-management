@@ -102,11 +102,11 @@ import { VBtn } from 'vuetify/lib'
 const processFlagOptions = [
 	{
 		label: '加工商',
-		value: 1,
+		value: '1',
 	},
 	{
 		label: '供应商',
-		value: 0,
+		value: '0',
 	},
 ]
 export default {
@@ -234,7 +234,7 @@ export default {
 						if (unit.isEmptyObject(params.row)) {
 							return false
 						}
-						let processFlag = params.row.processFlag ? 1 : 0
+						let processFlag = params.row.processFlag ? '1' : '0'
 						let item =
 							processFlagOptions.find((v) => v.value === processFlag) || {}
 						return h('span', item.label || '')
@@ -292,7 +292,7 @@ export default {
 					processFlag: [
 						{
 							required: true,
-							type: 'number',
+							type: 'string',
 							message: '类型不能为空',
 							trigger: 'change',
 						},
@@ -380,10 +380,12 @@ export default {
 							data: [],
 							filterable: true,
 							disabled: false,
+							showAllLevels: false,
 							props: {
 								label: 'groupName',
 								children: 'sonGroups',
 								value: 'id',
+								checkStrictly: true,
 							},
 						},
 					},
@@ -561,9 +563,21 @@ export default {
 			}
 			vm.modal1.isOpen = true
 			await vm.getSupplierGroupList()
-
 			vm.$nextTick(() => {
 				vm.$refs.modal1.resetFields()
+				if (type === 'add') {
+					vm.modal1.values = {
+						supplierGroup: '',
+						supplierNo: '', //供应商编号
+						company: '', //公司名
+						telephone: '', //电话
+						contact: '', //联系人
+						remark: '', //备注
+						companyAddress: '', //公司地址
+						depotAddress: '', //仓库地址
+						processFlag: '0',
+					}
+				}
 				if (type === 'modify') {
 					vm.modal1.sendData = row
 					vm.modal1.title = '修改'
@@ -583,7 +597,7 @@ export default {
 						}
 					)
 					//类型
-					let processFlag = row.processFlag ? 1 : 0
+					let processFlag = row.processFlag ? '1' : '0'
 					let processFlagItem =
 						processFlagOptions.find((v) => v.value === processFlag) || {}
 					vm.modal1.values = {
@@ -646,7 +660,7 @@ export default {
 		//点击tree节点 每一级触发
 		nodeClickItem(data) {
 			this.getList(1, {
-				customerGroupId: data.id,
+				supplierGroupId: data.id,
 			})
 		},
 		//列表查询
@@ -782,7 +796,7 @@ export default {
 						remark: values.remark, //备注
 						companyAddress: values.companyAddress, //公司地址
 						depotAddress: values.depotAddress, //仓库地址
-						processFlag: values.processFlag, //类别
+						processFlag: Number(values.processFlag), //类别
 						// paymentId: paymentMethodItem.value, //付款方式
 						// paymentMethod: paymentMethodItem.label,
 						// accountDays: values.accountDays, //账期天数

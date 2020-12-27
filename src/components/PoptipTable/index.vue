@@ -1,10 +1,11 @@
 <template>
 	<!-- <div class="poptip-table" :style="style"> -->
 	<el-popover
-		placement="bottom"
+		placement="bottom-end"
 		width="500"
-		trigger="click"
+		:trigger="trigger"
 		:popper-class="`poptip-table ${popperClass}`"
+		:open-delay="500"
 		v-model="value"
 	>
 		<el-table
@@ -98,6 +99,10 @@ export default {
 			type: String,
 			default: '',
 		},
+		trigger: {
+			type: String,
+			default: 'manual',
+		},
 	},
 	data() {
 		return {}
@@ -116,7 +121,6 @@ export default {
 			return this.data
 		},
 		newPopperOptions() {
-			console.log(['popperOptions', this.popperOptions])
 			return this.popperOptions
 		},
 	},

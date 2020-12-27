@@ -284,10 +284,12 @@ export default {
 							filterable: true,
 							data: [],
 							disabled: false,
+							showAllLevels: false,
 							props: {
 								label: 'groupName',
 								children: 'sonGroups',
 								value: 'id',
+								checkStrictly: true,
 							},
 						},
 					},
