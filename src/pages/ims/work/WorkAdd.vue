@@ -17,7 +17,7 @@
 						<el-row>
 							<el-col :span="8">
 								<el-form-item label="编号" prop="orderNo">
-									<el-input
+									<el-input :disabled="!canChange"
 										v-model="formValidate.orderNo"
 										placeholder="编号"
 									></el-input>
@@ -27,6 +27,7 @@
 								<el-form-item label="客户名称" prop="customer">
 									<el-select
 										v-model="formValidate.customer"
+										:disabled="!canChange"
 										filterable
 										clearable
 										remote
@@ -48,6 +49,7 @@
 								<el-form-item label="交货日期" prop="deliveryDate">
 									<el-date-picker
 										v-model="formValidate.deliveryDate"
+										:disabled="!canChange"
 										:picker-options="pickerOptions"
 										type="date"
 										placeholder="选择交货日期"
@@ -61,6 +63,7 @@
 							<el-col :span="8">
 								<el-form-item label="印件名" prop="printName">
 									<el-input
+										:disabled="!canChange"
 										v-model="formValidate.printName"
 										placeholder="印件名"
 									></el-input>
@@ -70,16 +73,20 @@
 								<el-form-item label="订单数量" prop="orderNum">
 									<el-input
 										type="number"
+										min="1"
+										:disabled="!canChange"
 										v-model="formValidate.orderNum"
 										placeholder="订单数量"
 									></el-input>
 								</el-form-item>
 							</el-col>
 							<el-col :span="8">
-								<el-form-item label="件数" prop="piecesNum">
+								<el-form-item label="件数" prop="pieceNum">
 									<el-input
 										type="number"
-										v-model="formValidate.piecesNum"
+											min="1"
+										:disabled="!canChange"
+										v-model="formValidate.pieceNum"
 										placeholder="件数"
 									></el-input>
 								</el-form-item>
@@ -89,6 +96,7 @@
 							<el-col :span="8">
 								<el-form-item label="发货方式" prop="deliveryMethod">
 									<el-select
+										:disabled="!canChange"
 										v-model="formValidate.deliveryMethod"
 										placeholder="发货方式"
 										filterable
@@ -109,6 +117,7 @@
 							<el-col :span="8">
 								<el-form-item label="制版人员" prop="plateMaker">
 									<el-select
+									:disabled="!canChange"
 										v-model="formValidate.plateMaker"
 										placeholder="制版人员"
 										filterable
@@ -129,6 +138,7 @@
 							<el-col :span="8">
 								<el-form-item label="刀版" prop="knifePlate">
 									<el-select
+									:disabled="!canChange"
 										v-model="formValidate.knifePlate"
 										placeholder="刀版"
 										filterable
@@ -147,10 +157,11 @@
 								</el-form-item>
 							</el-col>
 						</el-row>
- <el-row>
+            <el-row>
 							<el-col :span="8">
 								<el-form-item label="备注" prop="remark">
 									<el-input
+									:disabled="!canChange"
 										v-model="formValidate.remark"
 										placeholder="备注"
 									></el-input>
@@ -162,6 +173,7 @@
 							<el-col :span="24">
 								<el-form-item label="上传图片" prop="imgList">
 									<up-load
+									:disabled="!canChange"
 										:fileList="formValidate.imgList"
 										size="mini"
 										:limit="3"
@@ -179,7 +191,7 @@
 						align="middle"
 					>
 						<el-col :span="3" style="padding-left: 12px">部件</el-col>
-						<el-col :span="3">
+						<el-col :span="3" v-if="canChange">
 							<el-button
 								@click="addPartRows"
 								size="mini"
@@ -204,11 +216,8 @@
 						ref="partTable"
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
-						@cell-dblclick="partCellDblclick" @selection-change="partSectionChange" @row-click="partRowClick">
-						<el-table-column
-								type="selection"
-								width="55">
-							</el-table-column>
+						@cell-dblclick="partCellDblclick"  @row-click="partRowClick">
+				
 						<el-table-column
 							prop="index"
 							align="center"
@@ -223,7 +232,7 @@
 						<el-table-column label="产品/部件" align="center" prop="part">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`part${scope.$index}Edit`]"
+									v-if="scope.row[`part${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.part"
 									size="mini"
 									@blur="partInputBlur(scope.$index, 'part', $event)"
@@ -235,7 +244,7 @@
 						<el-table-column align="center" label="材料" prop="materialName">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`materialName${scope.$index}Edit`]"
+									v-if="scope.row[`materialName${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.materialName"
 									size="mini"
 									@blur="partInputBlur(scope.$index, 'materialName', $event)"
@@ -249,7 +258,7 @@
 						<el-table-column align="center" label="开料尺寸" prop="cutSizeName">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`cutSizeName${scope.$index}Edit`]"
+									v-if="scope.row[`cutSizeName${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.cutSizeName"
 									size="mini"
 									@blur="partInputBlur(scope.$index, 'cutSizeName', $event)"
@@ -263,9 +272,10 @@
 						<el-table-column align="center" label="印数" prop="printNum">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`printNum${scope.$index}Edit`]"
+									v-if="scope.row[`printNum${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.printNum"
 									type="number"
+										min="1"
 									@blur="partInputBlur(scope.$index, 'printNum', $event)"
 									size="mini"
 								></el-input>
@@ -275,7 +285,7 @@
 							<el-table-column align="center" label="备注" prop="remark">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`remark${scope.$index}Edit`]"
+									v-if="scope.row[`remark${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.remark"
 									@blur="partInputBlur(scope.$index, 'remark', $event)"
 									size="mini"
@@ -286,7 +296,7 @@
 						<el-table-column align="center" label="供应商"  prop="supplierName">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`supplierName${scope.$index}Edit`]"
+									v-if="scope.row[`supplierName${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.supplierName"
 									size="mini"
 									@blur="partInputBlur(scope.$index, 'supplierName', $event)"
@@ -297,7 +307,7 @@
 								<span v-else>{{ scope.row.supplierName }}</span>
 							</template>
 						</el-table-column>
-						<el-table-column align="center" label="" width="60">
+						<el-table-column align="center" label="" width="60" v-if="canChange">
 							<template slot-scope="scope">
 								<i
 									class="el-icon-delete ims-btn"
@@ -313,19 +323,14 @@
 						align="middle"
 					>
 						<el-col :span="3" style="padding-left: 12px">工艺工序</el-col>
-						<el-col :span="3">
+						<el-col :span="3" v-if="canChange">
 							<el-button
 								@click="addCraftRows"
 								size="mini"
 								type="text"
 								>添加</el-button
 							>
-								<el-button
-								@click="delCraftRows"
-								size="mini"
-								type="text"
-								>删除</el-button
-							>
+							
 						</el-col>
 						<el-col :span="18"></el-col>
 					</el-row>
@@ -338,17 +343,14 @@
 						ref="craftTable"
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
-						@cell-dblclick="craftCellDblclick" @selection-change="craftSectionChange"
+						@cell-dblclick="craftCellDblclick" 
 					>
-							<el-table-column
-								type="selection"
-								width="55">
-							</el-table-column>
+						
 						<el-table-column prop="producePartName" label="产品/部件"> </el-table-column>
 						<el-table-column label="工艺" prop="technologyName">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`technologyName${scope.$index}Edit`]"
+									v-if="scope.row[`technologyName${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.technologyName"
 									size="mini"
 									@blur="craftInputBlur(scope.$index, 'technologyName', $event)"
@@ -362,10 +364,11 @@
 						<el-table-column label="工艺数量" prop="tecNum">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`tecNum${scope.$index}Edit`]"
+									v-if="scope.row[`tecNum${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.tecNum"
 									size="mini"
 										type="number"
+											min="1"
 									@blur="craftInputBlur(scope.$index, 'tecNum', $event)"
 							
 								></el-input>
@@ -375,10 +378,11 @@
 										<el-table-column label="已报工数量" prop="finishNum">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`finishNum${scope.$index}Edit`]"
+									v-if="scope.row[`finishNum${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.finishNum"
 									size="mini"
 										type="number"
+											min="1"
 									@blur="craftInputBlur(scope.$index, 'finishNum', $event)"
 							
 								></el-input>
@@ -388,7 +392,7 @@
 						<el-table-column label="备注" prop="remark">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`remark${scope.$index}Edit`]"
+									v-if="scope.row[`remark${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.remark"
 									size="mini"
 									@blur="craftInputBlur(scope.$index, 'remark', $event)"
@@ -399,7 +403,7 @@
 						<el-table-column label="加工商" prop="processSupplierName">
 							<template slot-scope="scope">
 								<el-input
-									v-if="scope.row[`processSupplierName${scope.$index}Edit`]"
+									v-if="scope.row[`processSupplierName${scope.$index}Edit`]&&canChange"
 									v-model="scope.row.processSupplierName"
 									size="mini"
 									@blur="craftInputBlur(scope.$index, 'processSupplierName', $event)"
@@ -410,7 +414,7 @@
 								<span v-else>{{ scope.row.processSupplierName }}</span>
 							</template>
 						</el-table-column>
-						<el-table-column align="center" label="" width="60">
+						<el-table-column align="center" label="" width="60" v-if="canChange">
 							<template slot-scope="scope">
 								<i
 									class="el-icon-delete ims-btn"
@@ -419,7 +423,7 @@
 							</template>
 						</el-table-column>
 					</el-table>
-							<div style="margin-top:30px">
+							<div style="margin-top:30px" v-if="canChange">
 						<el-row type="flex" justify="center" align="middle">
 							<v-btn color="#409EFF" width="76" height="30" dark @click="save">保存</v-btn>
 						</el-row>
@@ -498,8 +502,8 @@ export default {
 	data() {
 		return {
 			isOpen: false,
+			canChange: true, // true ：可修改 false ：不可修改
 			editData: {},
-			checkedData: [],
 			partRowData: {},
 			craftRowData: {},
 			partCurrentRow: {}, //部件table 当前行的数据
@@ -533,7 +537,7 @@ export default {
 				printName: '', //印件名
 				orderNum: '', //订单数量
 				exportQuantity: '', //出货数量
-				piecesNum: '', //件数
+				pieceNum: '', //件数
 				deliveryMethod: '', //发货方式
 				plateMaker: '', //制版人员
 				knifePlate: '', //刀版
@@ -584,7 +588,7 @@ export default {
 						trigger: 'blur',
 					},
 				],
-				piecesNum: [
+				pieceNum: [
 					{
 						required: true,
 						message: '件数不能为空',
@@ -682,6 +686,9 @@ export default {
 			window.sessionStorage.setItem('work-detail', JSON.stringify(params))
 		}
 		vm.editData = params
+		if (params.disabled) {
+			vm.canChange = false
+		}
 		// 新增
 		if (params.type === 'add') {
 			vm.breadList[vm.breadList.length - 1].name = '工单添加'
@@ -731,7 +738,7 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { id: row.id },
+				bizContent: { id: row.id||row.produceId },
 			}
 			vm.api.work.orderProduceSingle(params).then(
 				(res) => {
@@ -743,7 +750,7 @@ export default {
 						deliveryDate: unit.formatDate(row.deliveryDate), //交货日期
 						printName: row.printName || '', //印件名
 						orderNum: row.orderNum || '', //订单数量
-						piecesNum: row.piecesNum || '', //件数
+						pieceNum: row.pieceNum || '', //件数
 						deliveryMethod: row.deliveryMethodId || '', //发货方式id
 						plateMaker: row.plateMakerId || '', //制版人员id
 						knifePlate: row.knifePlateId || '', //制版人员id
@@ -983,6 +990,7 @@ export default {
 					if (vm.searchData.companyName) {
 						params.bizContent.company = vm.searchData.companyName
 					}
+					params.bizContent.processFlag = 0
 					path = 'suppliers'
 					break
 				//工艺
@@ -992,10 +1000,12 @@ export default {
 					}
 					path = 'technologys'
 					break
+				//加工商
 				case 'processSupplierName':
 					if (vm.searchData.processSupplierName) {
 						params.bizContent.company = vm.searchData.processSupplierName
 					}
+					params.bizContent.processFlag = 1
 					path = 'suppliers'
 					break
 				default:
@@ -1087,7 +1097,6 @@ export default {
 					default:
 						break
 				}
-				partRowItem[`${partRowData.name}${partRowData.index}Edit`] = false
 			}
 			if (
 				['technologyName', 'processSupplierName'].includes(craftRowData.name)
@@ -1114,9 +1123,6 @@ export default {
 
 						break
 				}
-				partRowItem.orderProduceTechnologyList[craftRowData.index][
-					`${craftRowData.name}${craftRowData.index}Edit`
-				] = false
 			}
 			this.isOpen = false
 			this.$set(this.partData, partIndex, partRowItem)
@@ -1133,6 +1139,9 @@ export default {
 		//部件table 单元格双击事件
 		partCellDblclick(row, column) {
 			let columnList = []
+			if (!this.canChange) {
+				return false
+			}
 			if (columns[column.property]) {
 				columnList = unit.cloneDeep(columns[column.property])
 			}
@@ -1157,12 +1166,18 @@ export default {
 		},
 		//部件table 某一行单击事件
 		partRowClick(row) {
+			if (!this.canChange) {
+				return false
+			}
 			this.partCurrentRow = row
 			this.partRowData.index = this.partData.indexOf(row)
 		},
 		//工艺工序双击事件
 		craftCellDblclick(row, column) {
 			let columnList = []
+			if (!this.canChange) {
+				return false
+			}
 			if (columns[column.property]) {
 				columnList = unit.cloneDeep(columns[column.property])
 			} else {
@@ -1220,10 +1235,7 @@ export default {
 		renderNumber(i) {
 			return unit.serialNumber(i + 1, { bits: 2 })
 		},
-		partSectionChange(val) {
-			this.checkedData = val
-			console.log(['val', val])
-		},
+
 		save() {
 			let vm = this
 			vm.$refs.workForm.validate((valid) => {
@@ -1293,7 +1305,7 @@ export default {
 						deliveryDate: unit.formatDate(forms.deliveryDate), //交货日期
 						printName: forms.printName, //印件名
 						orderNum: forms.orderNum, //订单数量
-						piecesNum: Number(forms.piecesNum), //件数
+						pieceNum: Number(forms.pieceNum), //件数
 						deliveryMethod: deliveryMethodItem.label, //发货方式
 						deliveryMethodId: deliveryMethodItem.value, //发货方式id
 						plateMaker: plateMakerItem.label, //制版人员

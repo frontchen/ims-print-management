@@ -33,6 +33,43 @@ const work = {
   //审核工单信息信息接口
   checkOrderProduce: params => {
     return http.post(`${workPrefix}/checkOrderProduce`, params, servicesRaw)
+  },
+  /************************* 工作台 *************************/
+  //根据工艺获取工作台列表
+  orderProduceTeches: params => {
+    return http.post(`${workPrefix}/orderProduceTeches`, params, servicesRaw)
+  },
+  //完成工单、撤销工单 工艺信息 1完成 0撤销
+  finishOrderProduceTech: params => {
+    return http.post(
+      `${workPrefix}/finishOrderProduceTech`,
+      params,
+      servicesRaw
+    )
+  },
+  //获取工艺报工明细 参数 produceTechnologyId 工单工艺ID
+  orderProduceTechRenderDetails: params => {
+    return http.post(
+      `${workPrefix}/orderProduceTechRenderDetails`,
+      params,
+      servicesRaw
+    )
+  },
+  //汇报工单工艺信息
+  renderOrderProduceTech: params => {
+    return http.post(
+      `${workPrefix}/renderOrderProduceTech`,
+      params,
+      servicesRaw
+    )
+  },
+  //撤销汇报工单工艺信息 参数 "id":报工明细id
+  revokeRenderOrderProduceTech: params => {
+    return http.post(
+      `${workPrefix}/revokeRenderOrderProduceTech`,
+      params,
+      servicesRaw
+    )
   }
 }
 

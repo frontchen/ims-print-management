@@ -14,47 +14,55 @@
           >
           </app-search-bar>
           <div class="white-space"></div>
-
-          <el-table
-            :data="items"
-            style="width: 100%"
-            v-loading="loading"
-            height="400"
-          >
-            <el-table-column
-              v-for="(item, index) in headers"
-              :width="item.width"
-              :key="index"
-              :render-header="item.renderHeader"
-              :align="item.align"
-              show-overflow-tooltip
-              :label="item.text"
-              :prop="item.value"
+          <el-tabs v-model="checkedTab" type="card" @tab-click="changeTab">
+            <el-tab-pane
+              :label="table.label"
+              :name="table.name"
+              v-for="(table, i) in tabPaneList"
+              :key="i"
             >
-              <template slot-scope="scope">
-                <Expand
-                  v-if="item.render"
-                  :row="scope.row || {}"
-                  :index="scope.$index"
-                  :render="item.render"
-                ></Expand>
-                <span v-else>{{ scope.row[item.value] }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-row type="flex">
-            <el-col :span="13"></el-col>
-            <el-col :span="11">
-              <el-pagination
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-                :current-page="pageIndex"
-                :page-size="pageSize"
-                layout="total, prev, pager, next, jumper"
-                :total="total"
-              ></el-pagination>
-            </el-col>
-          </el-row>
+              <el-table
+                :data="table.data"
+                style="width: 100%"
+                v-loading="loading"
+                height="400"
+              >
+                <el-table-column
+                  v-for="(item, index) in table.columns"
+                  :width="item.width"
+                  :key="index"
+                  :render-header="item.renderHeader"
+                  :align="item.align"
+                  show-overflow-tooltip
+                  :label="item.text"
+                  :prop="item.value"
+                >
+                  <template slot-scope="scope">
+                    <Expand
+                      v-if="item.render"
+                      :row="scope.row || {}"
+                      :index="scope.$index"
+                      :render="item.render"
+                    ></Expand>
+                    <span v-else>{{ scope.row[item.value] }}</span>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-row type="flex">
+                <el-col :span="13"></el-col>
+                <el-col :span="11">
+                  <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="table.pages.pageIndex"
+                    :page-size="pageSize"
+                    layout="total, prev, pager, next, jumper"
+                    :total="table.pages.total"
+                  ></el-pagination>
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+          </el-tabs>
         </app-card>
       </v-layout>
     </v-container>
@@ -62,7 +70,6 @@
 </template>
 
 <script>
-import filters from '@/services/filters'
 import unit from '@/services/unit'
 import Submenu from 'Components/Submenu'
 import Expand from 'Components/GraphicText/expand'
@@ -72,42 +79,16 @@ export default {
     Submenu,
     Expand
   },
-  filters: {
-    price(val) {
-      return filters.currency(val, { format: true, prefix: '' })
-    }
-  },
+
   data() {
     return {
+      checkedTab: '0',
       isSelectAll: false,
       checkboxSelection: [],
       searchValues: {},
       searchData: {},
       loading: false,
       searchList: [
-        {
-          type: 'select',
-          name: 'status',
-          value: 'Pending',
-          width: 140,
-          disabled: true,
-          attr: {
-            // filterable: true,
-            // placeholder: '客户名称',
-            // clearable: true,
-            options: [
-              {
-                label: '待审批',
-                value: 'Pending'
-              },
-              {
-                label: '已批准',
-                value: 'Approved'
-              }
-            ],
-            size: 'mini'
-          }
-        },
         {
           type: 'select',
           name: 'customer',
@@ -186,64 +167,136 @@ export default {
           path: ''
         }
       ],
-      headers: [
+
+      tabPaneList: [
         {
-          text: '',
-          align: 'center',
-          width: 55,
-          renderHeader: (h, params) => {
-            return this.renderCheckedAll(h, params)
-          },
-          render: (h, params) => {
-            return this.renderCheckedItem(h, params)
+          label: '待审批',
+          name: '0',
+          loading: false,
+          columns: [
+            {
+              text: '',
+              align: 'center',
+              width: 55,
+              renderHeader: (h, params) => {
+                return this.renderCheckedAll(h, params)
+              },
+              render: (h, params) => {
+                return this.renderCheckedItem(h, params)
+              }
+            },
+            {
+              text: '订单号',
+              align: 'center',
+              sortable: false,
+              value: 'orderNo'
+            },
+            { text: '客户名称', align: 'center', value: 'customerName' },
+            {
+              text: '印件名称',
+              align: 'center',
+              value: 'printName'
+            },
+
+            {
+              text: '订单数量',
+              value: 'orderNum',
+              align: 'center'
+            },
+
+            // { text: '出货数量', align: 'center', value: 'receiver_address' },
+            {
+              text: '交货日期',
+              value: 'deliveryTime',
+              align: 'center',
+              render: (h, params) => {
+                return this.renderDeliveryTime(h, params)
+              }
+            },
+
+            {
+              text: '操作',
+              align: 'center',
+              width: 140,
+              render: (h, params) => {
+                return this.renderBtn(h, params)
+              }
+            }
+          ],
+          data: [],
+          pages: {
+            pageIndex: 1,
+            total: 0
           }
         },
         {
-          text: '订单号',
-          align: 'center',
-          sortable: false,
-          value: 'orderNo'
-        },
-        { text: '客户名称', align: 'center', value: 'customerName' },
-        {
-          text: '印件名称',
-          align: 'center',
-          value: 'printName'
-        },
+          label: '已批准',
+          name: '1',
+          loading: false,
+          columns: [
+            {
+              text: '',
+              align: 'center',
+              width: 55,
+              renderHeader: (h, params) => {
+                return this.renderCheckedAll(h, params)
+              },
+              render: (h, params) => {
+                return this.renderCheckedItem(h, params)
+              }
+            },
+            {
+              text: '订单号',
+              align: 'center',
+              sortable: false,
+              value: 'orderNo'
+            },
+            { text: '客户名称', align: 'center', value: 'customerName' },
+            {
+              text: '印件名称',
+              align: 'center',
+              value: 'printName'
+            },
 
-        {
-          text: '订单数量',
-          value: 'orderNum',
-          align: 'center'
-        },
+            {
+              text: '订单数量',
+              value: 'orderNum',
+              align: 'center'
+            },
 
-        // { text: '出货数量', align: 'center', value: 'receiver_address' },
-        {
-          text: '交货日期',
-          value: 'deliveryTime',
-          align: 'center',
-          render: (h, params) => {
-            return this.renderDeliveryTime(h, params)
-          }
-        },
+            // { text: '出货数量', align: 'center', value: 'receiver_address' },
+            {
+              text: '交货日期',
+              value: 'deliveryTime',
+              align: 'center',
+              render: (h, params) => {
+                return this.renderDeliveryTime(h, params)
+              }
+            },
 
-        {
-          text: '操作',
-          align: 'center',
-          width: 140,
-          render: (h, params) => {
-            return this.renderBtn(h, params)
+            {
+              text: '操作',
+              align: 'center',
+              width: 140,
+              render: (h, params) => {
+                return this.renderBtn(h, params)
+              }
+            }
+          ],
+          data: [],
+          pages: {
+            pageIndex: 1,
+            total: 0
           }
         }
       ],
-      items: [],
-
       pageIndex: 1,
       pageSize: 10,
       total: 1
     }
   },
   mounted() {
+    this.getCustomerList()
     this.getList()
   },
   methods: {
@@ -300,18 +353,42 @@ export default {
       }
     },
     // 搜索栏select cascader切换事件
-    changeSearchList() {},
+    changeSearchList(item) {
+      if (item.name === 'customer') {
+        this.searchData.customerName = ''
+        this.searchData.customerId = item.value
+        this.getList(1)
+      }
+    },
+    // 搜索栏select cascader模糊搜索
+    searchBarQuery(item) {
+      if (item.name === 'customer') {
+        this.searchData.customerName = item.value
+        this.getCustomerList(1, {
+          customerName: item.value
+        })
+      }
+    },
+    changeTab() {
+      this.getList(1)
+    },
+    //列表查询
     async getList(page = 1, param = {}) {
       let vm = this
       let params = {
         reqTime: null,
-        bizContent: { pageNo: page, pageSize: vm.pageSize, ...param }
+        bizContent: {
+          pageNo: page,
+          pageSize: vm.pageSize,
+          checkStatus: vm.checkedTab,
+          ...param
+        }
       }
-      if (vm.searchData.companyId) {
-        params.bizContent.companyId = vm.searchData.companyId
+      if (vm.searchData.customerId) {
+        params.bizContent.customerId = vm.searchData.customerId
       }
-      if (vm.searchData.companyName) {
-        params.bizContent.company = vm.searchData.companyName
+      if (vm.searchData.customerName) {
+        params.bizContent.customerName = vm.searchData.customerName
       }
       if (vm.searchData.startDate) {
         params.bizContent.startDate = vm.searchData.startDate
@@ -326,14 +403,42 @@ export default {
       })
       vm.loading = false
       if (!res) return false
+      let index = vm.tabPaneList.findIndex(v => v.name === vm.checkedTab)
       let list = res.item || []
-      vm.items = list
-      vm.total = res.total || 1
-      vm.pageIndex = res.pageNo
+      let pages = {
+        total: res.total || 1,
+        pageIndex: res.pageNo
+      }
+      vm.$set(vm.tabPaneList[index], 'data', list)
+      vm.$set(vm.tabPaneList[index], 'pages', pages)
+    },
+    getCustomerList(page = 1, param = {}) {
+      let vm = this
+      let params = {
+        reqTime: null,
+        bizContent: { pageNo: page, pageSize: vm.pageSize, ...param }
+      }
+      vm.api.work.orderProduces(params).then(
+        res => {
+          if (!res) return false
+          let list = res.item || []
+          let index = vm.searchList.findIndex(v => v.name === 'customer')
+          if (index === -1) return
+          list = list.map(v => {
+            v.label = v.customerName
+            v.value = v.customerId
+            return v
+          })
+          vm.$set(vm.searchList[index].attr, 'options', list)
+        },
+        err => {
+          vm.$message.error(err)
+        }
+      )
     },
     // 条件查询
     goSearch() {},
-    getOrderDetail(row) {
+    getDetail(row) {
       this.$router.push({
         name: 'work-edit',
         params: {
@@ -456,7 +561,7 @@ export default {
       if (unit.isEmptyObject(row)) {
         return false
       }
-      return h('span', filters.formatDate(row.deliveryDate || ''))
+      return h('span', unit.formatDate(row.deliveryDate || ''))
     },
 
     renderBtn(h, params) {
@@ -493,7 +598,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      // vm.getOrderDetail(row)
+                      // vm.getDetail(row)
                     }
                   }
                 },
@@ -519,7 +624,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      vm.getOrderDetail(row)
+                      vm.getDetail(row)
                     }
                   }
                 },
