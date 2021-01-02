@@ -122,6 +122,8 @@ export default {
             clearable: true,
             options: [],
             size: 'mini',
+            hasMore: false,
+            pageIndex: 1,
             remote: true,
             remoteMethod: query => {
               this.searchBarQuery({
@@ -614,10 +616,17 @@ export default {
     // 搜索栏客户名称 滚动下拉
     companyScroll() {
       let params = {}
+      let index = this.searchList.findIndex(v => v.name === 'company')
+      let select = this.searchList[index]
+      if (!select) return false
+      if (!select.attr.hasMore) {
+        return false
+      }
+      select.attr.pageIndex += 1
       if (this.searchData.companyName) {
         params.company = this.searchData.companyName
       }
-      this.getCompanyList(1, params)
+      this.getCompanyList(select.attr.pageIndex, params)
     },
     //点击tree节点 每一级触发
     nodeClickItem(data) {
@@ -678,7 +687,13 @@ export default {
             v.value = v.id
             return v
           })
+          list = unit.objectArrayReduce(list, 'value')
+          let hasMore = res.total < res.pageSize ? false : true
+          if (page > 1) {
+            list = [...vm.searchList[index].attr.options, ...list]
+          }
           vm.$set(vm.searchList[index].attr, 'options', list)
+          vm.$set(vm.searchList[index].attr, 'hasMore', hasMore)
         },
         err => {
           vm.$message.error(err)

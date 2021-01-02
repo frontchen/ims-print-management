@@ -302,10 +302,17 @@ export default {
     // 搜索栏开料尺寸名称 滚动下拉
     cutSizeScroll() {
       let params = {}
+      let index = this.searchList.findIndex(v => v.name === 'cutSize')
+      let select = this.searchList[index]
+      if (!select) return false
+      if (!select.attr.hasMore) {
+        return false
+      }
+      select.attr.pageIndex += 1
       if (this.searchData.cutSize) {
         params.cutSize = this.searchData.cutSize
       }
-      this.getCutsizeList(1, params)
+      this.getCutsizeList(select.attr.pageIndex, params)
     },
     getList(page = 1) {
       let vm = this
@@ -359,7 +366,13 @@ export default {
             v.value = v.id
             return v
           })
+          list = unit.objectArrayReduce(list, 'value')
+          let hasMore = res.total < res.pageSize ? false : true
+          if (page > 1) {
+            list = [...vm.searchList[index].attr.options, ...list]
+          }
           vm.$set(vm.searchList[index].attr, 'options', list)
+          vm.$set(vm.searchList[index].attr, 'hasMore', hasMore)
         },
         err => {
           vm.$message.error(err)

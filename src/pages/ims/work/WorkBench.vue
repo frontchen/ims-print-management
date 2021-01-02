@@ -205,6 +205,8 @@ export default {
             clearable: true,
             options: [],
             size: 'mini',
+            hasMore: false,
+            pageIndex: 1,
             remote: true,
             remoteMethod: query => {
               this.searchBarQuery({
@@ -420,7 +422,17 @@ export default {
   },
   methods: {
     //搜索栏查询
-    getSearch() {},
+    getSearch(val) {
+      if (val) {
+        let [startDate, endDate] = val.date
+        startDate = startDate ? unit.formatDate(startDate) : ''
+        endDate = endDate ? unit.formatDate(endDate) : ''
+        this.searchData.startDate = startDate
+        this.searchData.endDate = endDate
+        this.searchData.customerId = val.customer
+        this.getList(1)
+      }
+    },
     // 搜索栏按钮点击
     showModal(type) {
       let vm = this
@@ -472,10 +484,17 @@ export default {
     // 搜索栏客户名称 滚动下拉
     customerScroll() {
       let params = {}
+      let index = this.searchList.findIndex(v => v.name === 'customer')
+      let select = this.searchList[index]
+      if (!select) return false
+      if (!select.attr.hasMore) {
+        return false
+      }
+      select.attr.pageIndex += 1
       if (this.searchData.customerName) {
         params.customerName = this.searchData.customerName
       }
-      this.getCustomerList(1, params)
+      this.getCustomerList(select.attr.pageIndex, params)
     },
     //搜索栏-公司名称下拉列表
     getCustomerList(page = 1, param = {}) {
@@ -502,10 +521,12 @@ export default {
             return v
           })
           list = unit.objectArrayReduce(list, 'value')
+          let hasMore = res.total < res.pageSize ? false : true
           if (page > 1) {
             list = [...vm.searchList[index].attr.options, ...list]
           }
           vm.$set(vm.searchList[index].attr, 'options', list)
+          vm.$set(vm.searchList[index].attr, 'hasMore', hasMore)
         },
         err => {
           vm.$message.error(err)
@@ -525,6 +546,11 @@ export default {
     changeTab() {
       this.indeterminate = false
       this.isSelectAll = false
+      this.searchData={}
+      this.searchList.forEach(item=>{
+        item.value=''
+      })
+      this.getCustomerList()
       this.checkboxSelection = []
       this.getList(1)
     },
@@ -805,7 +831,6 @@ export default {
     //报工
     addSure() {
       let vm = this
-      console.log(['123333'])
       vm.$refs.modal1.validate(valid => {
         if (!valid) return false
         let row = vm.checkboxSelection[0]

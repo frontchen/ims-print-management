@@ -114,6 +114,8 @@ export default {
             clearable: true,
             options: [],
             size: 'mini',
+            hasMore: false,
+            pageIndex: 1,
             remote: true,
             remoteMethod: query => {
               this.searchBarQuery({
@@ -360,6 +362,13 @@ export default {
     // 搜索栏客户名称 滚动下拉
     staffNameScroll() {
       let params = {}
+      let index = this.searchList.findIndex(v => v.name === 'staffName')
+      let select = this.searchList[index]
+      if (!select) return false
+      if (!select.attr.hasMore) {
+        return false
+      }
+      select.attr.pageIndex += 1
       if (this.searchData.staffName) {
         params.staffName = this.searchData.staffName
       }
@@ -417,7 +426,12 @@ export default {
             v.value = v.id
             return v
           })
+          let hasMore = res.total < res.pageSize ? false : true
+          if (page > 1) {
+            list = [...vm.searchList[index].attr.options, ...list]
+          }
           vm.$set(vm.searchList[index].attr, 'options', list)
+          vm.$set(vm.searchList[index].attr, 'hasMore', hasMore)
         },
         err => {
           vm.$message.error(err)

@@ -109,6 +109,8 @@ export default {
             clearable: true,
             options: [],
             size: 'mini',
+            hasMore: false,
+            pageIndex: 1,
             remote: true,
             remoteMethod: query => {
               this.searchBarQuery({
@@ -317,10 +319,17 @@ export default {
     // 搜索栏部门名称 滚动下拉
     departmentScroll() {
       let params = {}
+      let index = this.searchList.findIndex(v => v.name === 'departmentName')
+      let select = this.searchList[index]
+      if (!select) return false
+      if (!select.attr.hasMore) {
+        return false
+      }
+      select.attr.pageIndex += 1
       if (this.searchData.departmentName) {
         params.departmentName = this.searchData.departmentName
       }
-      this.getDepartmentList(1, params)
+      this.getDepartmentList(select.attr.pageIndex, params)
     },
     getList(page = 1) {
       let vm = this
@@ -374,7 +383,13 @@ export default {
             v.value = v.id
             return v
           })
+          list = unit.objectArrayReduce(list, 'value')
+          let hasMore = res.total < res.pageSize ? false : true
+          if (page > 1) {
+            list = [...vm.searchList[index].attr.options, ...list]
+          }
           vm.$set(vm.searchList[index].attr, 'options', list)
+          vm.$set(vm.searchList[index].attr, 'hasMore', hasMore)
         },
         err => {
           vm.$message.error(err)
