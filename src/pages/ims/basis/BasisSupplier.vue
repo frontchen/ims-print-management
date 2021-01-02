@@ -138,7 +138,8 @@ export default {
                 name: 'company',
                 value: query
               })
-            }
+            },
+            loadMore: this.companyScroll
           }
         },
         {
@@ -656,6 +657,14 @@ export default {
           company: item.value
         })
       }
+    },
+    // 搜索栏客户名称 滚动下拉
+    companyScroll() {
+      let params = {}
+      if (this.searchData.companyName) {
+        params.company = this.searchData.companyName
+      }
+      this.getCompanyList(1, params)
     },
     //点击tree节点 每一级触发
     nodeClickItem(data) {

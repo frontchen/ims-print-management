@@ -72,6 +72,7 @@
               :popper-class="item.attr.popperClass"
               :size="item.attr.size"
               @change="onChange(item.name, $event)"
+              v-loadmore="item.attr.loadMore"
             >
               <el-option
                 v-for="(option, oi) in item.attr.options"
@@ -90,6 +91,7 @@
               v-model="item.value"
               :props="getCascaderProps(item)"
               @change="onCascaderChange(index, arguments)"
+              v-loadmore="item.attr.loadMore"
             ></el-cascader>
             <!-- datepicker -->
             <el-date-picker
@@ -207,6 +209,7 @@
               :no-data-text="item.attr.noDataText"
               :popper-class="item.attr.popperClass"
               @change="onRightChange(item.name, $event)"
+              v-loadmore="item.attr.loadMore"
             >
               <el-option
                 v-for="(option, oi) in item.attr.options"
@@ -279,6 +282,7 @@
               v-model="item.value"
               :props="getCascaderProps(item)"
               @change="onCascaderChange(index, arguments)"
+              v-loadmore="item.attr.loadMore"
             ></el-cascader>
           </div>
         </slot>

@@ -128,7 +128,7 @@
                   :automatic-dropdown="item.attr.automaticDropdown"
                   @change="selectOnChange(index, i, $event)"
                   @on-query-change="selectOnQueryChange(item.name, $event)"
-                  @on-scroll-bottom="onScrollBottom(item.name, $event)"
+                  v-loadmore="item.attr.loadMore"
                   :ref="`select${index}${i}`"
                 >
                   <el-option
@@ -165,7 +165,7 @@
                   :before-filter="item.attr.beforeFilter"
                   :popper-class="item.attr.popperClass"
                   @change="cascaderOnChange(arguments, index, i)"
-                  @on-scroll-bottom="onScrollBottom(item.name, $event)"
+                  v-loadmore="item.attr.loadMore"
                 ></el-cascader>
                 <!-- date -->
                 <el-date-picker

@@ -204,7 +204,15 @@ export default {
             placeholder: '客户名称',
             clearable: true,
             options: [],
-            size: 'mini'
+            size: 'mini',
+            remote: true,
+            remoteMethod: query => {
+              this.searchBarQuery({
+                name: 'customer',
+                value: query
+              })
+            },
+            loadMore: this.customerScroll
           }
         },
         {
@@ -454,10 +462,20 @@ export default {
     searchBarQuery(item) {
       if (item.name === 'customer') {
         this.searchData.customerName = item.value
-        this.getCustomerList(1, {
-          customerName: item.value
-        })
+        if (item.value) {
+          this.getCustomerList(1, {
+            customerName: item.value
+          })
+        }
       }
+    },
+    // 搜索栏客户名称 滚动下拉
+    customerScroll() {
+      let params = {}
+      if (this.searchData.customerName) {
+        params.customerName = this.searchData.customerName
+      }
+      this.getCustomerList(1, params)
     },
     //搜索栏-公司名称下拉列表
     getCustomerList(page = 1, param = {}) {
@@ -579,7 +597,10 @@ export default {
         {
           text: '审核时间',
           value: 'checkTime',
-          align: 'center'
+          align: 'center',
+          render: (h, params) => {
+            return h('span', unit.formatDate(params.row.checkTime))
+          }
         },
 
         {

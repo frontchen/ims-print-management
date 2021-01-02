@@ -100,7 +100,15 @@ export default {
             placeholder: '客户名称',
             clearable: true,
             options: [],
-            size: 'mini'
+            size: 'mini',
+            remote: true,
+            remoteMethod: query => {
+              this.searchBarQuery({
+                name: 'customer',
+                value: query
+              })
+            },
+            loadMore: this.customerScroll
           }
         },
         {
@@ -369,6 +377,14 @@ export default {
         })
       }
     },
+    // 搜索栏客户名称 滚动下拉
+    customerScroll() {
+      let params = {}
+      if (this.searchData.customerName) {
+        params.customerName = this.searchData.customerName
+      }
+      this.getCustomerList(1, params)
+    },
     changeTab() {
       this.getList(1)
     },
@@ -405,6 +421,12 @@ export default {
       if (!res) return false
       let index = vm.tabPaneList.findIndex(v => v.name === vm.checkedTab)
       let list = res.item || []
+      if (list.length) {
+        list = list.map(v => {
+          v._checked = false
+          return v
+        })
+      }
       let pages = {
         total: res.total || 1,
         pageIndex: res.pageNo
@@ -467,10 +489,6 @@ export default {
       vm.checkboxSelection = []
       vm.isSelectAll = false
       vm.$message.success(res.msg || '审批成功')
-      vm.items = vm.items.map(item => {
-        item._checked = false
-        return item
-      })
     },
     //删除
     async delOrderProduce(row) {
@@ -486,10 +504,6 @@ export default {
       vm.checkboxSelection = []
       vm.isSelectAll = false
       vm.$message.success(res.msg || '删除成功')
-      vm.items = vm.items.map(item => {
-        item._checked = false
-        return item
-      })
     },
     // 列表标题勾选框 （全选）
     renderCheckedAll(h) {
@@ -502,7 +516,8 @@ export default {
         on: {
           change: checked => {
             vm.isSelectAll = checked
-            let data = unit.cloneDeep(vm.items)
+            let index = vm.tabPaneList.findIndex(v => v.name === vm.checkedTab)
+            let data = unit.cloneDeep(vm.tabPaneList[index].data)
             let checkedArr = []
             data.forEach(v => {
               if (!unit.isEmptyObject(v)) {
@@ -513,7 +528,7 @@ export default {
               }
             })
             vm.checkboxSelection = checkedArr
-            vm.items = data
+            vm.$set(vm.tabPaneList[index], 'data', data)
           }
         }
       })
@@ -532,7 +547,8 @@ export default {
         },
         on: {
           change: checked => {
-            let data = unit.cloneDeep(vm.items)
+            let index = vm.tabPaneList.findIndex(v => v.name === vm.checkedTab)
+            let data = unit.cloneDeep(vm.tabPaneList[index].data)
             data[params.index]._checked = checked
             let checkedArr = []
             data.forEach(v => {
@@ -546,11 +562,11 @@ export default {
             vm.isSelectAll = false
             if (
               checkedArr.length ===
-              vm.items.filter(v => !unit.isEmptyObject(v)).length
+              data.filter(v => !unit.isEmptyObject(v)).length
             ) {
               vm.isSelectAll = true
             }
-            vm.items = data
+            vm.$set(vm.tabPaneList[index], 'data', data)
           }
         }
       })

@@ -130,7 +130,8 @@ export default {
                 name: 'materialName',
                 value: query
               })
-            }
+            },
+            loadMore: this.materialNameScroll
           }
         },
         {
@@ -420,6 +421,14 @@ export default {
           materialName: item.value
         })
       }
+    },
+    // 搜索栏物料名称 滚动下拉
+    materialNameScroll() {
+      let params = {}
+      if (this.searchData.materialName) {
+        params.materialName = this.searchData.materialName
+      }
+      this.getMaterialNameList(1, params)
     },
     //点击tree节点 每一级触发
     nodeClickItem(data) {
