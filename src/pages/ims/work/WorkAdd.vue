@@ -32,6 +32,7 @@
 										clearable
 										remote
 										v-loadmore="scrollCustomer"
+										@change="customer.query=''"
 										:remote-method="queryCustomer"
 										placeholder="客户名称"
 									>
@@ -102,7 +103,9 @@
 										filterable
 										clearable
 										remote
+											@change="deliveryMethod.query=''"
 										:remote-method="queryDeliveryMethod"
+											v-loadmore="scrollDeliveryMethod"
 									>
 										<el-option
 											v-for="item in deliveryMethod.list"
@@ -122,8 +125,10 @@
 										placeholder="制版人员"
 										filterable
 										clearable
+												@change="plateMaker.query=''"
 										remote
 										:remote-method="queryPlateMaker"
+												v-loadmore="scrollPlateMaker"
 									>
 										<el-option
 											v-for="item in plateMaker.list"
@@ -144,7 +149,9 @@
 										filterable
 										clearable
 										remote
+												@change="knifePlate.query=''"
 										:remote-method="queryKnifePlate"
+										v-loadmore="scrollKnifePlate"
 									>
 										<el-option
 											v-for="item in knifePlate.list"
@@ -738,7 +745,7 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { id: row.id||row.produceId },
+				bizContent: { id: row.id || row.produceId },
 			}
 			vm.api.work.orderProduceSingle(params).then(
 				(res) => {
@@ -795,24 +802,72 @@ export default {
 				return item
 			})
 		},
+		//客户滚动下拉
 		scrollCustomer() {
-			console.log(['客户滚动下拉'])
+			if (!this.customer.hasMore) {
+				return false
+			}
+			this.customer.pageIndex += 1
+			this.getCustomerList(this.customer.pageIndex, {
+				company: this.customer.query,
+			})
+		},
+		//收货方式 滚动下拉
+		scrollDeliveryMethod() {
+			if (!this.deliveryMethod.hasMore) {
+				return false
+			}
+			this.deliveryMethod.pageIndex += 1
+			this.getDeliveryMethodList(this.deliveryMethod.pageIndex, {
+				deliveryMethod: this.deliveryMethod.query,
+			})
+		},
+		//制版人员滚动下拉
+		scrollPlateMaker() {
+			if (!this.plateMaker.hasMore) {
+				return false
+			}
+			this.plateMaker.pageIndex += 1
+			this.getKnifePlateList(this.plateMaker.pageIndex, {
+				staffName: this.plateMaker.query,
+			})
+		},
+		//刀版滚动下拉
+		scrollKnifePlate() {
+			if (!this.knifePlate.hasMore) {
+				return false
+			}
+			this.knifePlate.pageIndex += 1
+			this.getKnifePlateList(this.knifePlate.pageIndex, {
+				knifePlate: this.knifePlate.query,
+			})
 		},
 		//客户名称模糊搜索
 		queryCustomer(query) {
+			this.customer.query = query
 			this.getCustomerList(1, {
 				company: query,
 			})
 		},
 		//制版人员模糊搜索
 		queryPlateMaker(query) {
-			this.getStaffNameList(1, {
-				company: query,
+			this.plateMaker.query = query
+			this.getKnifePlateList(1, {
+				staffName: query,
 			})
 		},
+		//收货方式 模糊搜索
 		queryDeliveryMethod(query) {
-			this.getStaffNameList(1, {
-				company: query,
+			this.deliveryMethod.query = query
+			this.getDeliveryMethodList(1, {
+				deliveryMethod: query,
+			})
+		},
+		//刀版 模糊搜索
+		queryKnifePlate(query) {
+			this.knifePlate.query = query
+			this.getKnifePlateList(1, {
+				knifePlate: query,
 			})
 		},
 		//客户名称下拉列表
@@ -832,8 +887,12 @@ export default {
 				v.value = v.id
 				return v
 			})
-
+			let hasMore = res.total < res.pageSize ? false : true
+			if (page > 1) {
+				list = [...vm.customer.list, ...list]
+			}
 			vm.customer.list = list
+			vm.customer.hasMore = hasMore
 		},
 
 		//制版人员下拉列表
@@ -853,7 +912,12 @@ export default {
 				v.value = v.id
 				return v
 			})
+			let hasMore = res.total < res.pageSize ? false : true
+			if (page > 1) {
+				list = [...vm.plateMaker.list, ...list]
+			}
 			vm.plateMaker.list = list
+			vm.plateMaker.hasMore = hasMore
 		},
 		//刀版下拉列表
 		async getKnifePlateList(page = 1, param = {}) {
@@ -872,7 +936,12 @@ export default {
 				v.value = v.id
 				return v
 			})
+			let hasMore = res.total < res.pageSize ? false : true
+			if (page > 1) {
+				list = [...vm.knifePlate.list, ...list]
+			}
 			vm.knifePlate.list = list
+			vm.knifePlate.hasMore = hasMore
 		},
 		//发货方式下拉列表
 		async getDeliveryMethodList(page = 1, param = {}) {
@@ -892,7 +961,12 @@ export default {
 				v.value = v.id
 				return v
 			})
+			let hasMore = res.total < res.pageSize ? false : true
+			if (page > 1) {
+				list = [...vm.deliveryMethod.list, ...list]
+			}
 			vm.deliveryMethod.list = list
+			vm.deliveryMethod.hasMore = hasMore
 		},
 		//部件 添加按钮 新增table行
 		addPartRows() {

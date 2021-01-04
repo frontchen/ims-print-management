@@ -192,7 +192,7 @@ export default {
       searchValues: {},
       searchData: {},
       loading: false,
-      rightValue: '',
+      rightValue: '0',
       searchList: [
         {
           type: 'select',
@@ -274,7 +274,7 @@ export default {
             label: '状态',
             name: 'status',
             width: 100,
-            value: '',
+            value: '0',
             disabled: true,
             attr: {
               clearable: true,
@@ -546,9 +546,9 @@ export default {
     changeTab() {
       this.indeterminate = false
       this.isSelectAll = false
-      this.searchData={}
-      this.searchList.forEach(item=>{
-        item.value=''
+      this.searchData = {}
+      this.searchList.forEach(item => {
+        item.value = ''
       })
       this.getCustomerList()
       this.checkboxSelection = []

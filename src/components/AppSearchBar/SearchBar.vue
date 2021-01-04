@@ -13,6 +13,11 @@
             :class="rowCls(item.className)"
             v-for="(item, index) in searchList"
             :key="index"
+            :style="
+              !['button', 'text'].includes(item.type)
+                ? conWidthStyles(item.width || 160)
+                : ''
+            "
           >
             <!-- label -->
             <label
@@ -380,7 +385,8 @@ export default {
           conWidth = `${width}px`
         }
         let style = {
-          width: conWidth
+          width: conWidth,
+          maxWidth: conWidth
         }
         return style
       }

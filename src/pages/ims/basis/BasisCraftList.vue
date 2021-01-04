@@ -447,7 +447,7 @@ export default {
           path = 'createTechnology'
         }
         if (vm.modal1.title === '修改') {
-          path = 'createTechnology'
+          path = 'updateTechnology'
           params.bizContent.id = row.id
         }
         vm.api.basis[path](params).then(
