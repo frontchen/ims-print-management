@@ -205,12 +205,7 @@
 								type="text"
 								>添加</el-button
 							>
-								<el-button
-								@click="delRows('partColumns', 'partData')"
-								size="mini"
-								type="text"
-								>删除</el-button
-							>
+							
 						</el-col>
 						<el-col :span="18"></el-col>
 					</el-row>
@@ -353,7 +348,15 @@
 						@cell-dblclick="craftCellDblclick" 
 					>
 						
-						<el-table-column prop="producePartName" label="产品/部件"> </el-table-column>
+						<el-table-column prop="producePartName" label="产品/部件"> 
+						<template slot-scope="scope">
+							<el-select :disabled="!canChange" multiple v-if="scope.row[`producePartName${scope.$index}Edit`]&&canChange" v-model="scope.row.producePartName" size="mini" placeholder="产品/部件" filterable clearable @change="scope.row[`producePartName${scope.$index}Edit`]=false">
+								<el-option v-for="item in producePartNameList" :key="item.value" :label="item.label" :value="item.value">
+								</el-option>
+							</el-select>
+							<span v-else>{{ scope.row.producePartName| producePartName}}</span>
+						</template>
+						</el-table-column>
 						<el-table-column label="工艺" prop="technologyName">
 							<template slot-scope="scope">
 								<el-input
@@ -505,7 +508,14 @@ export default {
 		UpLoad,
 		Expand,
 	},
-
+	filters:{
+		producePartName(val){
+			if(Array.isArray(val)){
+				return val.join(',')
+			}
+			return val
+		}
+	},
 	data() {
 		return {
 			isOpen: false,
@@ -648,7 +658,6 @@ export default {
 				pageIndex: 1,
 				query: '',
 			},
-
 			//制版人员
 			plateMaker: {
 				list: [],
@@ -667,11 +676,10 @@ export default {
 				list: [],
 				disabled: false,
 			},
-
 			partColumns: [],
-
 			partData: [],
 			craftColumns: [],
+			craftData: [],
 			//部件、工艺工序 气泡table搜索参数
 			searchData: {},
 			poppoverTableData: [],
@@ -704,27 +712,34 @@ export default {
 		}
 	},
 	computed: {
-		craftData() {
-			let partRowData = this.partRowData
-			let data = []
-
-			if (this.partData[partRowData.index]) {
-				data = this.partData[partRowData.index].orderProduceTechnologyList || []
-			}
-			return data
+		producePartNameList() {
+			let partData = this.partData
+			let list = partData.map((v) => {
+				return {
+					label: v.part,
+					value: v.part,
+				}
+			})
+			return list
 		},
+		// craftData() {
+		// 	let partRowData = this.partRowData
+		// 	let data = []
+		// 	if (this.partData[partRowData.index]) {
+		// 		data = this.craftData || []
+		// 	}
+		// 	return data
+		// },
 	},
 	beforeDestroy() {
 		window.sessionStorage.removeItem('work-detail')
 	},
 	async mounted() {
 		// this.getTablesData()
-
 		await this.getCustomerList() //客户列表
 		await this.getStaffNameList() //制版人员
 		await this.getKnifePlateList() //刀版
 		await this.getDeliveryMethodList()
-
 		if (this.editData.type === 'edit') {
 			// 编辑
 			this.getEditForm(this.editData)
@@ -745,7 +760,9 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { id: row.id || row.produceId },
+				bizContent: {
+					id: row.id || row.produceId,
+				},
 			}
 			vm.api.work.orderProduceSingle(params).then(
 				(res) => {
@@ -795,7 +812,6 @@ export default {
 				}
 			)
 		},
-
 		changeUpload(fileList) {
 			this.formValidate.imgList = fileList.map((item) => {
 				item.url = this.getImageFullUrl(item.url)
@@ -875,7 +891,11 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+				bizContent: {
+					pageNo: page,
+					pageSize: vm.pageSize,
+					...param,
+				},
 			}
 			let res = await vm.api.basis.customers(params).catch((err) => {
 				err && vm.$message.error(err)
@@ -894,13 +914,16 @@ export default {
 			vm.customer.list = list
 			vm.customer.hasMore = hasMore
 		},
-
 		//制版人员下拉列表
 		async getStaffNameList(page = 1, param = {}) {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+				bizContent: {
+					pageNo: page,
+					pageSize: vm.pageSize,
+					...param,
+				},
 			}
 			let res = await vm.api.basis.staffs(params).catch((err) => {
 				err && vm.$message.error(err)
@@ -924,7 +947,11 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+				bizContent: {
+					pageNo: page,
+					pageSize: vm.pageSize,
+					...param,
+				},
 			}
 			let res = await vm.api.basis.knifePlates(params).catch((err) => {
 				err && vm.$message.error(err)
@@ -948,14 +975,17 @@ export default {
 			let vm = this
 			let params = {
 				reqTime: null,
-				bizContent: { pageNo: page, pageSize: vm.pageSize, ...param },
+				bizContent: {
+					pageNo: page,
+					pageSize: vm.pageSize,
+					...param,
+				},
 			}
 			let res = await vm.api.basis.deliveryMethods(params).catch((err) => {
 				err && vm.$message.error(err)
 			})
 			if (!res) return false
 			let list = res.item || []
-
 			list = list.map((v) => {
 				v.label = v.deliveryMethod
 				v.value = v.id
@@ -976,32 +1006,20 @@ export default {
 			this.partColumns.forEach((item) => {
 				row[item.value] = ''
 			})
-
 			this.partData.push(row)
 		},
 		//工艺工序 添加按钮 新增table行
 		addCraftRows() {
-			if (unit.isEmptyObject(this.partCurrentRow)) {
-				return this.$message.warning('请点中一条部件信息再添加')
+			if (!this.partData.length) {
+				return this.$message.warning('请先补充部件信息再添加')
 			}
 			let row = {
-				producePartName: this.partData[this.partRowData.index].part,
+				producePartName: [],
 			}
 			this.craftColumns.forEach((item) => {
 				row[item.value] = ''
 			})
-			this.partData[this.partRowData.index].orderProduceTechnologyList.push(row)
-		},
-
-		//删除按钮 批量删除table行
-		delRows(columns, data) {
-			if (!columns || !data) return
-			let row = {}
-			this[columns].forEach((item) => {
-				row[item.value] = ''
-			})
-
-			this[data].push(row)
+			this.craftData.push(row)
 		},
 		//部件table 输入框离开光标 隐藏气泡
 		partInputBlur(index, key) {
@@ -1109,10 +1127,7 @@ export default {
 		//工艺工序table 输入框离开光标 隐藏气泡
 		craftInputBlur(index, key) {
 			let vm = this
-			let partRowData = vm.partRowData || {}
-			vm.partData[partRowData.index].orderProduceTechnologyList[index][
-				`${key}${index}Edit`
-			] = false
+			vm.craftData[index][`${key}${index}Edit`] = false
 		},
 		//工艺工序table 输入框搜索时 显示气泡
 		craftInputFocus(index, name, event) {
@@ -1144,7 +1159,6 @@ export default {
 			const partRowData = this.partRowData || {}
 			const craftRowData = this.craftRowData || {}
 			const partIndex = this.partRowData.index || 0
-
 			let partRowItem = unit.cloneDeep(this.partData[partIndex])
 			if (
 				['materialName', 'cutSizeName', 'supplierName'].includes(
@@ -1167,7 +1181,6 @@ export default {
 						partRowItem.supplierName = item.company
 						partRowItem.supplierId = item.id
 						break
-
 					default:
 						break
 				}
@@ -1178,30 +1191,27 @@ export default {
 				switch (craftRowData.name) {
 					//工艺
 					case 'technologyName':
-						partRowItem.orderProduceTechnologyList[
+						this.craftData[
 							craftRowData.index
 						].technologyName = item.technologyName
-
-						partRowItem.orderProduceTechnologyList[
+						this.craftData[
 							craftRowData.index
 						].technologyId = item.id
 						break
 					//加工商
 					case 'processSupplierName':
-						partRowItem.orderProduceTechnologyList[
+						this.craftData[
 							craftRowData.index
 						].processSupplierName = item.company
-						partRowItem.orderProduceTechnologyList[
+						this.craftData[
 							craftRowData.index
 						].processSupplierId = item.id
-
 						break
 				}
 			}
 			this.isOpen = false
 			this.$set(this.partData, partIndex, partRowItem)
 		},
-
 		tableRowClassName({ rowIndex }) {
 			if (rowIndex === 1) {
 				return 'warning-row'
@@ -1259,18 +1269,15 @@ export default {
 					columnList = unit.cloneDeep(columns['supplierName'])
 				}
 			}
-
 			this.partColumns = columnList
-			let partRowData = this.partRowData
-			let index = this.partData[
-				partRowData.index
-			].orderProduceTechnologyList.indexOf(row)
+			let index = this.craftData.indexOf(row)
 			this.craftRowData = {
 				index: index,
 				name: column.property,
 			}
 			if (
 				[
+					'producePartName',
 					'technologyName',
 					'processSupplierName',
 					'tecNum',
@@ -1278,11 +1285,7 @@ export default {
 					'remark',
 				].includes(column.property)
 			) {
-				this.$set(
-					this.partData[partRowData.index].orderProduceTechnologyList[index],
-					`${column.property}${index}Edit`,
-					true
-				)
+				this.$set(this.craftData[index], `${column.property}${index}Edit`, true)
 			}
 		},
 		//更新气泡位置
@@ -1307,9 +1310,10 @@ export default {
 			this.craftData.splice(index, 1)
 		},
 		renderNumber(i) {
-			return unit.serialNumber(i + 1, { bits: 2 })
+			return unit.serialNumber(i + 1, {
+				bits: 2,
+			})
 		},
-
 		save() {
 			let vm = this
 			vm.$refs.workForm.validate((valid) => {

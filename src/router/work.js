@@ -2,6 +2,7 @@
 const WorkList = () => import('Ims/work/WorkList') // 工单列表
 const WorkAdd = () => import('Ims/work/WorkAdd') // 工单新增
 const WorkBench = () => import('Ims/work/WorkBench') // 工作台
+const WorkOutsourcingBench = () => import('Ims/work/WorkOutsourcingBench') // 委外工作台
 const work = [
   {
     path: '/work/list',
@@ -26,6 +27,12 @@ const work = [
     name: 'work-bench',
     title: '工作台',
     component: WorkBench
+  },
+  {
+    path: '/work/outsourcingBench',
+    name: 'work-outsourcingBench',
+    title: '委外工作台',
+    component: WorkOutsourcingBench
   }
 ]
 

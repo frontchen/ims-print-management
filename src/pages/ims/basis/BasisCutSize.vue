@@ -10,6 +10,7 @@
             @on-search="getSearch"
             @on-button="showModal"
             @on-change="changeSearchList"
+            @on-blur="searchBarBlur"
             :values="searchValues"
           >
           </app-search-bar>
@@ -298,6 +299,9 @@ export default {
           cutSize: item.value
         })
       }
+    },
+    searchBarBlur() {
+      this.searchData.cutSize = ''
     },
     // 搜索栏开料尺寸名称 滚动下拉
     cutSizeScroll() {

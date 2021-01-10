@@ -10,6 +10,7 @@
             @on-search="getSearch"
             @on-button="showModal"
             @on-change="changeSearchList"
+            @on-blur="searchBarBlur"
             :values="searchValues"
           >
           </app-search-bar>
@@ -306,6 +307,9 @@ export default {
         this.searchData.departmentId = item.value
         this.getList(1)
       }
+    },
+    searchBarBlur() {
+      this.searchData.departmentName = ''
     },
     // 搜索栏select cascader模糊搜索
     searchBarQuery(item) {

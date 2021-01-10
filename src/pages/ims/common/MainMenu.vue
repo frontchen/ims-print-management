@@ -129,6 +129,11 @@ export default {
                 title: '工作台',
                 path: '/work/bench',
                 label: 'Old'
+              },
+              {
+                title: '委外工作台',
+                path: '/work/outsourcingBench',
+                label: 'Old'
               }
             ]
           },

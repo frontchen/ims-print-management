@@ -53,6 +53,7 @@
               :label="item.attr.label"
               :tabindex="item.attr.tabindex"
               @change="onQueryChange(item.name, $event)"
+              @blur="onBlur(item.name, $event)"
             />
             <!-- select -->
             <el-select
@@ -77,6 +78,7 @@
               :popper-class="item.attr.popperClass"
               :size="item.attr.size"
               @change="onChange(item.name, $event)"
+              @blur="onBlur(item.name, $event)"
               v-loadmore="item.attr.loadMore"
             >
               <el-option
@@ -96,6 +98,7 @@
               v-model="item.value"
               :props="getCascaderProps(item)"
               @change="onCascaderChange(index, arguments)"
+              @blur="onBlur(item.name, $event)"
               v-loadmore="item.attr.loadMore"
             ></el-cascader>
             <!-- datepicker -->
@@ -191,6 +194,7 @@
               :label="item.attr.label"
               :tabindex="item.attr.tabindex"
               @change="onQueryChange(item.name, $event)"
+              @blur="onRightBlur(item.name, $event)"
             />
             <!-- select -->
             <el-select
@@ -215,6 +219,7 @@
               :popper-class="item.attr.popperClass"
               @change="onRightChange(item.name, $event)"
               v-loadmore="item.attr.loadMore"
+              @blur="onRightBlur(item.name, $event)"
             >
               <el-option
                 v-for="(option, oi) in item.attr.options"
@@ -288,6 +293,7 @@
               :props="getCascaderProps(item)"
               @change="onCascaderChange(index, arguments)"
               v-loadmore="item.attr.loadMore"
+              @blur="onRightBlur(item.name, $event)"
             ></el-cascader>
           </div>
         </slot>
@@ -639,6 +645,18 @@ export default {
     },
     onChange(name, val) {
       this.$emit('on-change', {
+        name,
+        value: val
+      })
+    },
+    onBlur(name, val) {
+      this.$emit('on-blur', {
+        name,
+        value: val
+      })
+    },
+    onRightBlur(name, val) {
+      this.$emit('on-right-blur', {
         name,
         value: val
       })

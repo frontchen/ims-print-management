@@ -309,7 +309,7 @@ export default {
           path: ''
         },
         {
-          name: '工作台',
+          name: '委外工作台',
           path: ''
         }
       ],
